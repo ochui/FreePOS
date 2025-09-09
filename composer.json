@@ -1,12 +1,4 @@
 {
-    "extra": {
-        "heroku": {
-            "index-document": "index.html",
-            "engines": {
-                "php": "8.0.0"
-            }
-        }
-    },
     "require": {
         "php": ">=8.0.0",
         "elephantio/elephant.io": "^4.13",
