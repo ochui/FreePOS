@@ -7,6 +7,9 @@ storage/templates/
 test-sw.html
 vendor/
 
+# Node.js dependencies
+api/node_modules/
+
 # Build artifacts
 *.min.js.map
 *.min.css.map

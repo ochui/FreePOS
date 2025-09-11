@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "FreePOS WebSocket server with support for Socket.IO, Pusher, and Ably",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"

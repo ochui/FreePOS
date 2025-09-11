@@ -40,6 +40,12 @@
                 Integrations
             </a>
         </li>
+        <li>
+            <a data-toggle="tab" href="#general-communication-tab">
+                <i class="blue icon-comment bigger-120"></i>
+                Communication
+            </a>
+        </li>
     </ul>
 
     <div class="tab-content no-border">
@@ -425,6 +431,120 @@
                 </div>
             </div>
         </div>
+        
+        <div id="general-communication-tab" class="tab-pane fade">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="widget-box transparent">
+                        <div class="widget-header widget-header-flat">
+                            <h4 class="lighter">
+                                <i class="icon-comment blue"></i>
+                                Real-time Communication Settings
+                            </h4>
+                        </div>
+
+                        <div class="widget-body">
+                            <div class="widget-main">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label no-padding-right" for="communication_provider">Communication Provider:</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-control" id="communication_provider" name="communication_provider">
+                                                <option value="socketio">Socket.IO (Self-hosted WebSocket)</option>
+                                                <option value="pusher">Pusher</option>
+                                                <option value="ably">Ably</option>
+                                            </select>
+                                            <span class="help-block">
+                                                <small class="red">Select your preferred real-time communication service</small>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="socketio-settings" class="communication-settings">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="feedserver_host">WebSocket Host:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" id="feedserver_host" name="feedserver_host" placeholder="127.0.0.1" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="feedserver_port">WebSocket Port:</label>
+                                            <div class="col-sm-9">
+                                                <input type="number" id="feedserver_port" name="feedserver_port" placeholder="3000" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="feedserver_proxy">Use Proxy:</label>
+                                            <div class="col-sm-9">
+                                                <label class="inline">
+                                                    <input name="feedserver_proxy" class="ace" type="checkbox" id="feedserver_proxy">
+                                                    <span class="lbl"> Enable proxy mode</span>
+                                                </label>
+                                                <span class="help-block">
+                                                    <small class="red">Check if using a reverse proxy (nginx, Apache)</small>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="pusher-settings" class="communication-settings" style="display: none;">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="pusher_app_id">Pusher App ID:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" id="pusher_app_id" name="pusher_app_id" placeholder="Your Pusher App ID" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="pusher_app_key">Pusher App Key:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" id="pusher_app_key" name="pusher_app_key" placeholder="Your Pusher App Key" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="pusher_app_secret">Pusher App Secret:</label>
+                                            <div class="col-sm-9">
+                                                <input type="password" id="pusher_app_secret" name="pusher_app_secret" placeholder="Your Pusher App Secret" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="pusher_app_cluster">Pusher Cluster:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" id="pusher_app_cluster" name="pusher_app_cluster" placeholder="us2" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="ably-settings" class="communication-settings" style="display: none;">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="ably_api_key">Ably API Key:</label>
+                                            <div class="col-sm-9">
+                                                <input type="password" id="ably_api_key" name="ably_api_key" placeholder="Your Ably API Key" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-4"></div>
+                                    
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <div class="alert alert-info">
+                                                <i class="icon-info-sign blue bigger-120"></i>
+                                                <strong>Communication Provider Information:</strong>
+                                                <ul class="list-unstyled" style="margin-top: 10px;">
+                                                    <li><strong>Socket.IO:</strong> Self-hosted WebSocket server (free, requires Node.js server)</li>
+                                                    <li><strong>Pusher:</strong> Cloud-hosted service (paid, easy setup)</li>
+                                                    <li><strong>Ably:</strong> Enterprise-grade service (paid, highly scalable)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -550,8 +670,17 @@
         }); // Start file upload, passing a callback to fire if it completes successfully
     }
 
+    // Communication provider switching functionality
+    $('#communication_provider').on('change', function() {
+        var provider = $(this).val();
+        $('.communication-settings').hide();
+        $('#' + provider + '-settings').show();
+    });
+
     $(function(){
         loadSettings();
+        // Initialize communication provider UI
+        $('#communication_provider').trigger('change');
         // hide loader
         POS.util.hideLoader();
     })
