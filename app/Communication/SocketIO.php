@@ -3,73 +3,37 @@
 /**
  * 
  * SocketIO is used to send data to the node.js socket.io (websocket) server
- * It uses ElephantIO library to send the data
+ * This class now acts as a compatibility layer for the new unified communication system
  *
  */
 
 namespace App\Communication;
 
-use ElephantIO\Client as Client;
-use ElephantIO\Engine\SocketIO\Version4X as Version4X;
+use App\Communication\Communication;
 use App\Controllers\Admin\AdminSettings;
 use App\Controllers\Admin\AdminUtilities;
 
 class SocketIO
 {
+    private $communication;
 
     /**
-     * @var ElephantIO\Client|null The elephant IO client
-     */
-    private $elephant = null;
-    /**
-     * @var string This hashkey provides authentication for php operations
-     */
-    private $hashkey = "supersecretkey";
-
-    /**
-     * Initialise the elephantIO object and set the hashkey
+     * Initialise the communication system
      */
     function __construct()
     {
-        $conf = AdminSettings::getConfigFileValues(true);
-        if (isset($conf->feedserver_key)) {
-            $this->hashkey = $conf->feedserver_key;
-        }
-
-        $this->elephant = new Client(new Version4X($conf->feedserver_host . ':' . $conf->feedserver_port . '/?hashkey=' .  $this->hashkey));
+        $this->communication = new Communication();
     }
 
     /**
-     * Sends session updates to the node.js feed server, optionally removing the corresponding session
-     * @param $event
-     * @param $data
-     * @return bool
-     */
-    private function sendData($event, $data)
-    {
-        set_error_handler(function () { /* ignore warnings */
-        }, E_WARNING);
-        try {
-            $this->elephant->connect();
-            $this->elephant->emit($event, $data);
-        } catch (\Exception $e) {
-            restore_error_handler();
-            return $e->getMessage();
-        }
-        restore_error_handler();
-        return true;
-    }
-
-    /**
-     * Sends session updates to the node.js feed server, optionally removing the corresponding session
+     * Sends session updates to the communication service
      * @param $data
      * @param bool $remove
      * @return bool
      */
     public function sendSessionData($data, $remove = false)
     {
-
-        return $this->sendData('session', ['hashkey' => $this->hashkey, 'data' => $data, 'remove' => $remove]);
+        return $this->communication->sendSessionData($data, $remove);
     }
 
     /**
@@ -78,14 +42,7 @@ class SocketIO
      */
     public function generateHashKey()
     {
-        $key = hash('sha256', AdminUtilities::getToken(256));
-        AdminSettings::setConfigFileValue('feedserver_key', $key);
-
-        $socket = new SocketControl();
-        if ($socket->isServerRunning())
-            $this->sendData('hashkey', ['hashkey' => $this->hashkey, 'newhashkey' => $key]);
-
-        return;
+        return $this->communication->generateHashKey();
     }
 
     /**
@@ -95,20 +52,7 @@ class SocketIO
      */
     public function sendResetCommand($devices = null)
     {
-
-        return $this->sendDataToDevices(['a' => 'reset'], $devices);
-    }
-
-    /**
-     * Send data to the specified devices, if no devices specified then all receive it.
-     * @param $data
-     * @param null $devices
-     * @return bool
-     */
-    private function sendDataToDevices($data, $devices = null)
-    {
-        // sends message to all authenticated devices
-        return $this->sendData('send', ['hashkey' => $this->hashkey, 'include' => $devices, 'data' => $data]);
+        return $this->communication->sendResetCommand($devices);
     }
 
     /**
@@ -119,8 +63,7 @@ class SocketIO
      */
     public function sendMessageToDevices($devices, $message)
     {
-        // send message to specified devices
-        return $this->sendDataToDevices(['a' => 'msg', 'data' => $message], $devices);
+        return $this->communication->sendMessageToDevices($devices, $message);
     }
 
     /**
@@ -130,8 +73,7 @@ class SocketIO
      */
     public function sendItemUpdate($item)
     {
-        // item updates get sent to all authenticated clients
-        return $this->sendDataToDevices(['a' => 'item', 'data' => $item], null);
+        return $this->communication->sendItemUpdate($item);
     }
 
     /**
@@ -141,8 +83,7 @@ class SocketIO
      */
     public function sendCustomerUpdate($customer)
     {
-
-        return $this->sendDataToDevices(['a' => 'customer', 'data' => $customer], null);
+        return $this->communication->sendCustomerUpdate($customer);
     }
 
     /**
@@ -152,9 +93,8 @@ class SocketIO
      * @return bool
      */
     public function sendSaleUpdate($sale, $devices = null)
-    { // device that the record was updated on
-
-        return $this->sendDataToDevices(['a' => 'sale', 'data' => $sale], $devices);
+    {
+        return $this->communication->sendSaleUpdate($sale, $devices);
     }
 
     /**
@@ -165,7 +105,7 @@ class SocketIO
      */
     public function sendConfigUpdate($newconfig, $configset)
     {
-        return $this->sendDataToDevices(['a' => 'config', 'type' => $configset, 'data' => $newconfig], null);
+        return $this->communication->sendConfigUpdate($newconfig, $configset);
     }
 
     /**
@@ -175,6 +115,6 @@ class SocketIO
      */
     public function sendDeviceConfigUpdate($newconfig)
     {
-        return $this->sendDataToDevices(['a' => 'config', 'type' => 'deviceconfig', 'data' => $newconfig], null);
+        return $this->communication->sendDeviceConfigUpdate($newconfig);
     }
 }

@@ -1388,19 +1388,27 @@ function POS() {
     var socket = null;
     var socketon = false;
     var authretry = false;
+    var communicationManager = null;
+    
     function startSocket(){
-        if (socket==null){
-            var proxy = POS.getConfigTable().general.feedserver_proxy;
-            var port = POS.getConfigTable().general.feedserver_port;
-            var socketPath = window.location.protocol+'//'+window.location.hostname+(proxy==false ? ':'+port : '');
-            socket = io.connect('http://127.0.0.1:3000');
-            socket.on('connection', onSocketConnect);
-            socket.on('reconnect', onSocketConnect);
-            socket.on('connect_error', socketError);
-            socket.on('reconnect_error', socketError);
-            socket.on('error', socketError);
-
-            socket.on('updates', function (data) {
+        if (communicationManager == null){
+            communicationManager = new CommunicationManager();
+            
+            // Get communication configuration
+            var config = POS.getConfigTable().general;
+            var commConfig = {
+                provider: config.communication_provider || 'socketio',
+                host: config.feedserver_host || '127.0.0.1',
+                port: config.feedserver_port || 3000,
+                key: config.pusher_app_key || config.ably_api_key,
+                cluster: config.pusher_app_cluster
+            };
+            
+            // Set up event handlers
+            communicationManager.on('connect', onSocketConnect);
+            communicationManager.on('disconnect', socketError);
+            communicationManager.on('error', socketError);
+            communicationManager.on('updates', function (data) {
                 switch (data.a){
                     case "item":
                         updateItemsTable(data.data);
@@ -1419,7 +1427,7 @@ function POS() {
                         break;
 
                     case "regreq":
-                        socket.emit('reg', {deviceid: configtable.deviceid, username: currentuser.username});
+                        communicationManager.registerDevice({deviceid: configtable.deviceid, username: currentuser.username});
                         break;
 
                     case "msg":
@@ -1454,31 +1462,39 @@ function POS() {
                     var statusmsg = data.a=="kitchenack" ? "The POS has received an acknowledgement that the last order was received in the kitchen" : "The POS has received updated "+ data.a + " data from the server";
                     setStatusBar(4, statustxt, statusmsg, 5000);
                 }
-                //alert(data.a);
             });
-        } else {
-            socket.connect();
+            
+            // Initialize the communication provider
+            communicationManager.init(commConfig);
         }
     }
 
     function onSocketConnect(){
         socketon = true;
         if (POS.isOnline() && defaultStatus.type != 1){
-            setStatusBar(1, "POS is Online", "The POS is running in online mode.\nThe feed server is connected and receiving realtime updates.", 0);
+            var providerName = communicationManager ? communicationManager.getProviderType() : 'socket';
+            setStatusBar(1, "POS is Online", "The POS is running in online mode.\nConnected via " + providerName + " and receiving realtime updates.", 0);
         }
     }
 
     function socketError(){
-        if (POS.isOnline())
-            setStatusBar(5, "Update Feed Offline", "The POS is running in online mode.\nThe feed server is disconnected and this terminal will not receive realtime updates.", 0);
+        if (POS.isOnline()){
+            var providerName = communicationManager ? communicationManager.getProviderType() : 'socket';
+            setStatusBar(5, "Update Feed Offline", "The POS is running in online mode.\nThe " + providerName + " connection is down and this terminal will not receive realtime updates.", 0);
+        }
         socketon = false;
         authretry = false;
     }
 
     function stopSocket(){
-        if (socket!=null){
+        if (communicationManager != null){
             socketon = false;
             authretry = false;
+            communicationManager.disconnect();
+            communicationManager = null;
+        }
+        // Fallback for legacy socket variable
+        if (typeof socket !== 'undefined' && socket != null){
             socket.disconnect();
             socket = null;
         }

@@ -12,9 +12,23 @@ return [
     */
 
     'timezone' => getenv('TIMEZONE') ?: 'UTC',
+    
+    // Communication provider configuration
+    'communication_provider' => getenv('COMMUNICATION_PROVIDER') ?: 'socketio',
+    
+    // Socket.IO configuration
     'feedserver_host' => getenv('FEED_SERVER_HOST') ?: '127.0.0.1',
     'feedserver_port' => getenv('FEED_SERVER_PORT') ?: 3000,
     'feedserver_key' => getenv('FEED_SERVER_KEY') ?: 'supersecretkey',
+    
+    // Pusher configuration
+    'pusher_app_id' => getenv('PUSHER_APP_ID') ?: '',
+    'pusher_app_key' => getenv('PUSHER_APP_KEY') ?: '',
+    'pusher_app_secret' => getenv('PUSHER_APP_SECRET') ?: '',
+    'pusher_app_cluster' => getenv('PUSHER_APP_CLUSTER') ?: 'us2',
+    
+    // Ably configuration
+    'ably_api_key' => getenv('ABLY_API_KEY') ?: '',
 
     /*
     |--------------------------------------------------------------------------
