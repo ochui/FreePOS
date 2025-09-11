@@ -92,7 +92,7 @@
                                         <div class="form-group">
                                             <label class="col-sm-5">Receipt Printer Logo:</label>
                                             <div class="col-sm-6">
-                                                <input type="text" id="reclogo" /><br />
+                                                <input type="text" id="reclogo"  hidden/><br />
                                                 <img id="reclogoprev" width="128" height="64" src="" />
                                                 <input type="file" id="reclogofile" name="file" />
                                                 <small>Must be a monochromatic 1-bit png (256*128)</small>
@@ -102,7 +102,7 @@
                                         <div class="form-group">
                                             <label class="col-sm-5">Browser/Email Logo:</label>
                                             <div class="col-sm-6">
-                                                <input type="text" id="recemaillogo" /><br />
+                                                <input type="text" id="recemaillogo" hidden /><br />
                                                 <img id="emaillogoprev" width="128" height="64" src="" />
                                                 <input type="file" id="emaillogofile" name="file" />
                                             </div>
@@ -289,6 +289,10 @@
             }
         });
 
+        // remove the file inputs
+        delete data['reclogofile'];
+        delete data['emaillogofile'];
+
         // Collect cash denominations
         var denominations = [];
         $("#denominations-tbody tr").each(function() {
@@ -309,6 +313,7 @@
         var result = POS.sendJsonData("settings/pos/set", JSON.stringify(data));
         if (result !== false) {
             POS.setConfigSet('pos', result);
+            options = result;
         }
         refreshPreviewImages();
         // hide loader
@@ -364,6 +369,7 @@
 
     function uploadRecLogo(event) {
         POS.uploadFile(event, function(data) {
+            console.log(data.path);
             $("#reclogo").val(data.path);
             $("#reclogoprev").prop("src", data.path);
             saveSettings();
