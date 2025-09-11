@@ -20,14 +20,21 @@ class SocketIOProvider implements CommunicationProviderInterface
     public function __construct(array $config = [])
     {
         $this->config = $config;
-        $conf = AdminSettings::getConfigFileValues(true);
         
-        if (isset($conf->feedserver_key)) {
-            $this->hashkey = $conf->feedserver_key;
+        // Try to get config from AdminSettings if available
+        try {
+            $conf = AdminSettings::getConfigFileValues(true);
+            if (isset($conf->feedserver_key)) {
+                $this->hashkey = $conf->feedserver_key;
+            }
+            $host = $conf->feedserver_host ?? ($config['feedserver_host'] ?? '127.0.0.1');
+            $port = $conf->feedserver_port ?? ($config['feedserver_port'] ?? 3000);
+        } catch (\Exception | \Error $e) {
+            // Use config array if AdminSettings not available
+            $this->hashkey = $config['feedserver_key'] ?? 'supersecretkey';
+            $host = $config['feedserver_host'] ?? '127.0.0.1';
+            $port = $config['feedserver_port'] ?? 3000;
         }
-        
-        $host = $conf->feedserver_host ?? '127.0.0.1';
-        $port = $conf->feedserver_port ?? 3000;
         
         $this->elephant = new Client(new Version4X($host . ':' . $port . '/?hashkey=' . $this->hashkey));
     }

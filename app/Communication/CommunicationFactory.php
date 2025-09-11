@@ -69,19 +69,26 @@ class CommunicationFactory
      */
     private function getConfig()
     {
+        $config = [];
+        
         // Load configuration from app.php
-        $appConfig = require base_path() . '/config/app.php';
+        try {
+            $appConfig = require base_path() . '/config/app.php';
+            $config = array_merge($config, $appConfig);
+        } catch (\Exception $e) {
+            // If app config fails, use defaults
+        }
         
         // Try to get additional config from database
         try {
             $dbConfig = AdminSettings::getConfigFileValues(true);
-            $config = (array) $dbConfig;
-        } catch (\Exception $e) {
-            $config = [];
+            $dbConfigArray = (array) $dbConfig;
+            $config = array_merge($config, $dbConfigArray);
+        } catch (\Exception | \Error $e) {
+            // If database config fails, use app config only
         }
         
-        // Merge with app config, prioritizing app config
-        return array_merge($config, $appConfig);
+        return $config;
     }
     
     /**
@@ -94,28 +101,52 @@ class CommunicationFactory
         $providers = [];
         
         // Socket.IO
-        $socketIO = new SocketIOProvider($config);
-        $providers['socketio'] = [
-            'name' => $socketIO->getProviderName(),
-            'available' => true, // Always available as fallback
-            'configured' => $socketIO->isAvailable()
-        ];
+        try {
+            $socketIO = new SocketIOProvider($config);
+            $providers['socketio'] = [
+                'name' => $socketIO->getProviderName(),
+                'available' => true, // Always available as fallback
+                'configured' => $socketIO->isAvailable()
+            ];
+        } catch (\Exception $e) {
+            $providers['socketio'] = [
+                'name' => 'Socket.IO',
+                'available' => true,
+                'configured' => false
+            ];
+        }
         
         // Pusher
-        $pusher = new PusherProvider($config);
-        $providers['pusher'] = [
-            'name' => $pusher->getProviderName(),
-            'available' => class_exists('\Pusher\Pusher'),
-            'configured' => $pusher->isAvailable()
-        ];
+        try {
+            $pusher = new PusherProvider($config);
+            $providers['pusher'] = [
+                'name' => $pusher->getProviderName(),
+                'available' => class_exists('\Pusher\Pusher'),
+                'configured' => $pusher->isAvailable()
+            ];
+        } catch (\Exception $e) {
+            $providers['pusher'] = [
+                'name' => 'Pusher',
+                'available' => class_exists('\Pusher\Pusher'),
+                'configured' => false
+            ];
+        }
         
         // Ably
-        $ably = new AblyProvider($config);
-        $providers['ably'] = [
-            'name' => $ably->getProviderName(),
-            'available' => class_exists('\Ably\AblyRest'),
-            'configured' => $ably->isAvailable()
-        ];
+        try {
+            $ably = new AblyProvider($config);
+            $providers['ably'] = [
+                'name' => $ably->getProviderName(),
+                'available' => class_exists('\Ably\AblyRest'),
+                'configured' => $ably->isAvailable()
+            ];
+        } catch (\Exception $e) {
+            $providers['ably'] = [
+                'name' => 'Ably',
+                'available' => class_exists('\Ably\AblyRest'),
+                'configured' => false
+            ];
+        }
         
         return $providers;
     }
