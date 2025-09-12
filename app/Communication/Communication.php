@@ -8,6 +8,7 @@
 namespace App\Communication;
 
 use App\Communication\CommunicationFactory;
+use App\Communication\DeviceRegistry;
 use App\Controllers\Admin\AdminSettings;
 use App\Controllers\Admin\AdminUtilities;
 
@@ -163,5 +164,54 @@ class Communication
     public function sendRegreqUpdate()
     {
         return $this->provider->sendRegreqUpdate();
+    }
+    
+    /**
+     * Add session for authentication (WebSocket-like functionality)
+     * @param string $sessionId
+     * @return bool
+     */
+    public function addSession($sessionId)
+    {
+        // For Pusher/Ably, store in registry
+        if (!($this->provider instanceof \App\Communication\Providers\SocketIOProvider)) {
+            DeviceRegistry::addSession($sessionId);
+        }
+        
+        // Send session update to provider
+        return $this->sendSessionData($sessionId, false);
+    }
+    
+    /**
+     * Remove session (WebSocket-like functionality)
+     * @param string $sessionId
+     * @return bool
+     */
+    public function removeSession($sessionId)
+    {
+        // For Pusher/Ably, remove from registry
+        if (!($this->provider instanceof \App\Communication\Providers\SocketIOProvider)) {
+            DeviceRegistry::removeSession($sessionId);
+        }
+        
+        // Send session removal to provider
+        return $this->sendSessionData($sessionId, true);
+    }
+    
+    /**
+     * Check if session is valid
+     * @param string $sessionId
+     * @return bool
+     */
+    public function isSessionValid($sessionId)
+    {
+        // For Socket.IO, this would be handled by the server
+        // For Pusher/Ably, check registry
+        if (!($this->provider instanceof \App\Communication\Providers\SocketIOProvider)) {
+            return DeviceRegistry::isSessionValid($sessionId);
+        }
+        
+        // Socket.IO handles its own session validation
+        return true;
     }
 }

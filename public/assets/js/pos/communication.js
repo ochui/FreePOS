@@ -244,6 +244,24 @@ function POSCommunicationManager() {
         }
         // For Pusher/Ably, broadcasts would be handled server-side via API calls
     };
+    
+    /**
+     * Send session data (WebSocket-like functionality)
+     * @param {string} sessionId
+     * @param {boolean} remove
+     */
+    this.sendSession = function(sessionId, remove) {
+        if (self.providerType === 'socketio' && self.provider) {
+            self.provider.emit('session', {
+                hashkey: 'supersecretkey', // This would need to be configured
+                data: sessionId,
+                remove: remove || false
+            });
+        } else {
+            // For Pusher/Ably, handle via API
+            console.log('Session management for ' + self.providerType + ':', {sessionId: sessionId, remove: remove});
+        }
+    };
 
     /**
      * Handle incoming messages with WebSocket-like filtering
