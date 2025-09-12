@@ -8,6 +8,8 @@ function POSCommunicationManager() {
     this.provider = null;
     this.providerType = 'socketio';
     this.connected = false;
+    this.deviceId = null;
+    this.username = null;
     this.callbacks = {
         connect: [],
         disconnect: [],
@@ -116,26 +118,25 @@ function POSCommunicationManager() {
             channel.bind('pusher:subscription_succeeded', function() { 
                 console.log('Pusher channel subscribed successfully');
                 self.onConnect();
-                // For Pusher/Ably, we need to trigger device registration manually
-                // since there's no Socket.IO style "regreq" event
-                setTimeout(function() {
-                    self.onUpdates({ a: "regreq", data: "" });
-                }, 100);
             });
             channel.bind('pusher:subscription_error', function(error) { 
                 console.error('Pusher subscription error:', error);
                 self.onError(error); 
             });
+            
+            // Handle all WebSocket-like events
             channel.bind('updates', function(data) { 
-                console.log('Pusher received data:', data);
-                // Handle the nested data structure from Pusher
-                if (data && data.data) {
-                    self.onUpdates(data.data);
-                } else {
-                    self.onUpdates(data);
-                }
+                console.log('Pusher received update:', data);
+                self.handleIncomingMessage(data);
             });
-            channel.bind('session-update', function(data) { self.handleSessionUpdate(data); });
+            
+            // Handle specific events that might come directly 
+            channel.bind('reg', function(data) { self.handleIncomingMessage({a: 'reg', data: data}); });
+            channel.bind('send', function(data) { self.handleIncomingMessage({a: 'send', data: data}); });
+            channel.bind('broadcast', function(data) { self.handleIncomingMessage({a: 'broadcast', data: data}); });
+            channel.bind('session', function(data) { self.handleIncomingMessage({a: 'session', data: data}); });
+            channel.bind('regreq', function(data) { self.handleIncomingMessage({a: 'regreq', data: data}); });
+            
         } catch (error) {
             console.error('Failed to initialize Pusher:', error);
             self.onError(error);
@@ -167,11 +168,6 @@ function POSCommunicationManager() {
             self.provider.connection.on('connected', function() { 
                 console.log('Ably connected successfully');
                 self.onConnect();
-                // For Pusher/Ably, we need to trigger device registration manually
-                // since there's no Socket.IO style "regreq" event
-                setTimeout(function() {
-                    self.onUpdates({ a: "regreq", data: "" });
-                }, 100);
             });
             self.provider.connection.on('disconnected', function() { self.onDisconnect(); });
             self.provider.connection.on('failed', function(error) { 
@@ -180,18 +176,20 @@ function POSCommunicationManager() {
             });
 
             var channel = self.provider.channels.get('pos-updates');
+            
+            // Handle all WebSocket-like events
             channel.subscribe('updates', function(message) { 
-                console.log('Ably received message:', message);
-                // Handle the nested data structure from Ably
-                if (message && message.data && message.data.data) {
-                    self.onUpdates(message.data.data);
-                } else if (message && message.data) {
-                    self.onUpdates(message.data);
-                } else {
-                    self.onUpdates(message);
-                }
+                console.log('Ably received update:', message);
+                self.handleIncomingMessage(message.data);
             });
-            channel.subscribe('session-update', function(message) { self.handleSessionUpdate(message.data); });
+            
+            // Handle specific events that might come directly
+            channel.subscribe('reg', function(message) { self.handleIncomingMessage({a: 'reg', data: message.data}); });
+            channel.subscribe('send', function(message) { self.handleIncomingMessage({a: 'send', data: message.data}); });
+            channel.subscribe('broadcast', function(message) { self.handleIncomingMessage({a: 'broadcast', data: message.data}); });
+            channel.subscribe('session', function(message) { self.handleIncomingMessage({a: 'session', data: message.data}); });
+            channel.subscribe('regreq', function(message) { self.handleIncomingMessage({a: 'regreq', data: message.data}); });
+            
         } catch (error) {
             console.error('Failed to initialize Ably:', error);
             self.onError(error);
@@ -203,10 +201,37 @@ function POSCommunicationManager() {
      * @param {Object} deviceInfo 
      */
     this.registerDevice = function(deviceInfo) {
+        self.deviceId = deviceInfo.deviceid;
+        self.username = deviceInfo.username;
+        
         if (self.providerType === 'socketio' && self.provider) {
             self.provider.emit('reg', deviceInfo);
+        } else {
+            // For Pusher/Ably, register device via API
+            console.log('Registering device via API for ' + self.providerType + ':', deviceInfo);
+            
+            // Use POS.sendJsonDataAsync if available, otherwise use fetch
+            if (typeof POS !== 'undefined' && POS.sendJsonDataAsync) {
+                POS.sendJsonDataAsync("devices/register", JSON.stringify(deviceInfo), function(result) {
+                    if (result !== false) {
+                        console.log('Device registration successful:', result);
+                    } else {
+                        console.warn('Device registration failed');
+                    }
+                });
+            } else {
+                // Fallback for environments where POS object is not available
+                fetch('/api/devices/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(deviceInfo)
+                }).then(response => response.json())
+                  .then(data => console.log('Device registration result:', data))
+                  .catch(error => console.error('Device registration error:', error));
+            }
         }
-        // For Pusher/Ably, device registration would be handled server-side
     };
 
     /**
@@ -217,7 +242,55 @@ function POSCommunicationManager() {
         if (self.providerType === 'socketio' && self.provider) {
             self.provider.emit('broadcast', data);
         }
-        // For Pusher/Ably, broadcasts would be handled server-side
+        // For Pusher/Ably, broadcasts would be handled server-side via API calls
+    };
+
+    /**
+     * Handle incoming messages with WebSocket-like filtering
+     * @param {Object} data 
+     */
+    this.handleIncomingMessage = function(data) {
+        console.log('Processing incoming message:', data);
+        
+        // Handle the data structure - it might be nested
+        var messageData = data;
+        if (data && data.data && data.data.data) {
+            messageData = data.data;
+        } else if (data && data.data) {
+            messageData = data.data;
+        }
+        
+        // For Pusher/Ably, check if message is targeted to this device
+        if (self.providerType !== 'socketio' && messageData && messageData.include) {
+            // Check if this device should receive the message
+            var shouldReceive = false;
+            
+            if (messageData.include === null || messageData.include === undefined) {
+                // Broadcast to all devices
+                shouldReceive = true;
+            } else if (typeof messageData.include === 'object') {
+                // Check if our device ID is in the include list
+                shouldReceive = messageData.include.hasOwnProperty(self.deviceId);
+            }
+            
+            if (!shouldReceive) {
+                console.log('Message not targeted for this device (ID: ' + self.deviceId + ')');
+                return;
+            }
+        }
+        
+        // Extract the actual message content
+        var finalData;
+        if (messageData && messageData.data && messageData.data.a) {
+            finalData = messageData.data;
+        } else if (messageData && messageData.a) {
+            finalData = messageData;
+        } else {
+            finalData = data;
+        }
+        
+        console.log('Final processed data:', finalData);
+        self.onUpdates(finalData);
     };
 
     /**
@@ -272,6 +345,14 @@ function POSCommunicationManager() {
         self.connected = true;
         for (var i = 0; i < self.callbacks.connect.length; i++) {
             try { self.callbacks.connect[i](); } catch (e) { console.error(e); }
+        }
+        
+        // For Pusher/Ably, trigger registration request after connection
+        if (self.providerType !== 'socketio') {
+            setTimeout(function() {
+                console.log('Triggering registration request for ' + self.providerType);
+                self.onUpdates({ a: "regreq", data: "" });
+            }, 100);
         }
     };
 

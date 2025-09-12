@@ -22,6 +22,7 @@ use App\Controllers\Transaction\Transactions;
 use App\Controllers\Invoice\Templates;
 use App\Communication\SocketControl;
 use App\Communication\Communication;
+use App\Communication\DeviceRegistry;
 use App\Integration\GoogleIntegration;
 use App\Integration\XeroIntegration;
 use App\Utility\Logger;
@@ -1207,12 +1208,49 @@ class AdminController
     {
         $this->checkAuthentication();
         
-        // For now, return a simulated device list since Pusher/Ably don't have real-time device tracking
-        // In a real implementation, this could query active sessions or a device registry
-        $this->result['data'] = [
-            0 => ['username' => 'admin'] // Admin device always present
-            // Additional devices would be tracked through other means (sessions, database, etc.)
-        ];
+        // Get devices from registry for Pusher/Ably, or use simulated data
+        $devices = DeviceRegistry::getDevicesFormatted();
+        
+        // Make sure admin device (ID 0) is always present
+        if (!isset($devices[0])) {
+            $devices[0] = ['username' => 'admin', 'socketid' => 'admin-sim'];
+        }
+        
+        $this->result['data'] = $devices;
+        return $this->returnResult();
+    }
+    
+    // Register a device in the device registry
+    public function registerDevice()
+    {
+        // Allow both authenticated and unauthenticated access for device registration
+        // This is needed because POS devices may register before full authentication
+        
+        $jsondata = file_get_contents("php://input");
+        $data = json_decode($jsondata, true);
+        
+        if (!$data || !isset($data['deviceid']) || !isset($data['username'])) {
+            $this->result['error'] = 'Device ID and username are required';
+            return $this->returnResult();
+        }
+        
+        $deviceId = intval($data['deviceid']);
+        $username = $data['username'];
+        $metadata = $data['metadata'] ?? [];
+        
+        try {
+            DeviceRegistry::registerDevice($deviceId, $username, $metadata);
+            
+            // Send device list update to all providers
+            $communication = new Communication();
+            $devices = DeviceRegistry::getDevicesFormatted();
+            $communication->sendDeviceListUpdate($devices);
+            
+            $this->result['data'] = 'Device registered successfully';
+            
+        } catch (\Exception $e) {
+            $this->result['error'] = 'Error registering device: ' . $e->getMessage();
+        }
         
         return $this->returnResult();
     }
@@ -1235,28 +1273,26 @@ class AdminController
                     return $this->returnResult();
                 }
                 
-                // Send device list update
-                $devices = [0 => ['username' => 'admin']]; // Simulated device list
+                // Send device list update using registry
+                $devices = DeviceRegistry::getDevicesFormatted();
+                // Make sure admin device is present
+                if (!isset($devices[0])) {
+                    $devices[0] = ['username' => 'admin', 'socketid' => 'admin-sim'];
+                }
+                
                 $deviceResult = $communication->sendDeviceListUpdate($devices);
                 if ($deviceResult !== true) {
                     $this->result['error'] = 'Failed to send device list update: ' . $deviceResult;
                     return $this->returnResult();
                 }
                 
-                $this->result['data'] = [
-                    'provider' => $providerInfo['name'],
-                    'registration_sent' => true,
-                    'device_list_sent' => true,
-                    'device_count' => count($devices)
-                ];
+                $this->result['data'] = 'Communication updates triggered successfully';
             } else {
-                $this->result['data'] = [
-                    'provider' => $providerInfo['name'],
-                    'message' => 'Socket.IO handles updates automatically'
-                ];
+                $this->result['data'] = 'No manual updates needed for Socket.IO';
             }
+            
         } catch (\Exception $e) {
-            $this->result['error'] = 'Communication error: ' . $e->getMessage();
+            $this->result['error'] = 'Error triggering communication updates: ' . $e->getMessage();
         }
         
         return $this->returnResult();

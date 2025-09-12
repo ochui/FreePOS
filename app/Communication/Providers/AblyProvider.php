@@ -51,9 +51,12 @@ class AblyProvider implements CommunicationProviderInterface
         
         try {
             $channel = $this->ably->channel($this->channel);
+            
+            // Send in WebSocket-like format
             $eventData = [
-                'data' => $data,
-                'devices' => $devices
+                'a' => $data['a'] ?? 'update',
+                'data' => $data['data'] ?? $data,
+                'include' => $devices  // Device targeting like WebSocket server
             ];
             
             $channel->publish('updates', $eventData);
@@ -101,9 +104,12 @@ class AblyProvider implements CommunicationProviderInterface
         
         try {
             $channel = $this->ably->channel($this->channel);
+            
+            // Send device list in WebSocket format
             $eventData = [
-                'data' => ['a' => 'devices', 'data' => json_encode($devices)],
-                'devices' => null
+                'a' => 'devices',
+                'data' => json_encode($devices),
+                'include' => null  // Broadcast to all
             ];
             
             $channel->publish('updates', $eventData);
@@ -121,9 +127,12 @@ class AblyProvider implements CommunicationProviderInterface
         
         try {
             $channel = $this->ably->channel($this->channel);
+            
+            // Send registration request in WebSocket format
             $eventData = [
-                'data' => ['a' => 'regreq', 'data' => ''],
-                'devices' => null
+                'a' => 'regreq',
+                'data' => '',
+                'include' => null  // Broadcast to all
             ];
             
             $channel->publish('updates', $eventData);

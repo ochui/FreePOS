@@ -57,9 +57,11 @@ class PusherProvider implements CommunicationProviderInterface
         }
         
         try {
+            // Send in WebSocket-like format
             $eventData = [
-                'data' => $data,
-                'devices' => $devices
+                'a' => $data['a'] ?? 'update',
+                'data' => $data['data'] ?? $data,
+                'include' => $devices  // Device targeting like WebSocket server
             ];
             
             $this->pusher->trigger($this->channel, 'updates', $eventData);
@@ -108,9 +110,11 @@ class PusherProvider implements CommunicationProviderInterface
         }
         
         try {
+            // Send device list in WebSocket format
             $eventData = [
-                'data' => ['a' => 'devices', 'data' => json_encode($devices)],
-                'devices' => null
+                'a' => 'devices',
+                'data' => json_encode($devices),
+                'include' => null  // Broadcast to all
             ];
             
             $this->pusher->trigger($this->channel, 'updates', $eventData);
@@ -127,9 +131,11 @@ class PusherProvider implements CommunicationProviderInterface
         }
         
         try {
+            // Send registration request in WebSocket format
             $eventData = [
-                'data' => ['a' => 'regreq', 'data' => ''],
-                'devices' => null
+                'a' => 'regreq',
+                'data' => '',
+                'include' => null  // Broadcast to all
             ];
             
             $this->pusher->trigger($this->channel, 'updates', $eventData);

@@ -186,6 +186,7 @@ class Application
             $r->addRoute(['GET', 'POST'], '/api/message/send', [AdminController::class, 'sendMessage']);
             $r->addRoute(['GET', 'POST'], '/api/device/reset', [AdminController::class, 'resetDevice']);
             $r->addRoute(['GET', 'POST'], '/api/devices/online', [AdminController::class, 'getOnlineDevices']);
+            $r->addRoute(['GET', 'POST'], '/api/devices/register', [AdminController::class, 'registerDevice']);
             $r->addRoute(['GET', 'POST'], '/api/communication/trigger-updates', [AdminController::class, 'triggerCommunicationUpdates']);
 
             // Settings management
