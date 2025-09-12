@@ -271,9 +271,7 @@ function restartAdminSocket() {
 function startAdminSocket(){
     if (adminCommunicationManager == null){
         adminCommunicationManager = new POSCommunicationManager();
-        
-        // Force refresh configuration to get latest settings
-        POS.refreshConfigTable();
+    
         
         // Get communication configuration from POS config
         var config = POS.getConfigTable().general;
