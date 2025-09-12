@@ -279,7 +279,7 @@ function startAdminSocket(){
             provider: config.communication_provider || 'socketio',
             host: config.feedserver_host || '127.0.0.1',
             port: config.feedserver_port || 3000,
-            key: config.pusher_app_key || config.ably_api_key,
+            key: config.communication_provider === 'pusher' ? config.pusher_app_key : (config.communication_provider === 'ably' ? config.ably_api_key : null),
             cluster: config.pusher_app_cluster
         };
         
