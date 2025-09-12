@@ -247,8 +247,76 @@
 </div>
 <div class="hr hr32 hr-dotted"></div>
 
+<script type="text/javascript" src="../assets/js/pos/communication.js"></script>
 <script type="text/javascript">
 var onlinedev = {};
+var adminCommunicationManager = null;
+
+function startAdminSocket(){
+    if (adminCommunicationManager == null){
+        adminCommunicationManager = new POSCommunicationManager();
+        
+        // Get communication configuration from POS config
+        var config = POS.getConfigTable().general;
+        var commConfig = {
+            provider: config.communication_provider || 'socketio',
+            host: config.feedserver_host || '127.0.0.1',
+            port: config.feedserver_port || 3000,
+            key: config.pusher_app_key || config.ably_api_key,
+            cluster: config.pusher_app_cluster
+        };
+        
+        // Set up event handlers
+        adminCommunicationManager.on('connect', function() {
+            console.log('Admin communication connected using ' + commConfig.provider);
+        });
+        
+        adminCommunicationManager.on('disconnect', function() {
+            console.log('Admin communication disconnected');
+        });
+        
+        adminCommunicationManager.on('error', function(error) {
+            console.log('Admin communication error:', error);
+        });
+        
+        adminCommunicationManager.on('updates', function (data) {
+            console.log("Admin received update:", data);
+            switch (data.a){
+                case "devices":
+                    onlinedev = JSON.parse(data.data);
+                    populateOnlineDevices(onlinedev);
+                    break;
+
+                case "sale":
+                    processIncomingSale(data.data);
+                    break;
+
+                case "regreq":
+                    // Register admin device
+                    adminCommunicationManager.registerDevice({deviceid: 0, username: 'admin'});
+                    break;
+
+                case "config":
+                    if (data.type == "deviceconfig") {
+                        if (data.data.hasOwnProperty("a")) {
+                            if (data.data.a == "removed") delete POS.devices[data.id];
+                        } else {
+                            POS.devices[data.data.id] = data.data;
+                            POS.locations[data.data.locationid] = { name: data.data.locationname };
+                        }
+                    }
+                    break;
+
+                case "error":
+                    console.error("Socket error:", data);
+                    break;
+            }
+        });
+        
+        // Initialize the communication provider
+        adminCommunicationManager.init(commConfig);
+    }
+}
 
 function sendMessage() {
     if (Object.keys(onlinedev).length <= 1) {
@@ -611,7 +679,7 @@ $(function () {
     chart.on('plotclick', clickgraph);
     chart.css({'width': '100%', 'height': '220px'});
     // load data
-    POS.startSocket();
+    startAdminSocket();
     
     // Create parallel requests
     var salesPromise = new Promise(function(resolve, reject) {
