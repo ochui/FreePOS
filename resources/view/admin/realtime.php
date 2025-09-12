@@ -424,22 +424,6 @@ function startAdminSocket(){
             adminCommunicationManager.init(commConfig);
             console.log('Admin communication manager initialized successfully with provider:', commConfig.provider);
             
-            // For Pusher/Ably, set up periodic device list refresh since they don't have real-time device tracking
-            if (commConfig.provider !== 'socketio') {
-                console.log('Setting up periodic device refresh for', commConfig.provider);
-                // Refresh device list every 30 seconds for non-Socket.IO providers
-                setInterval(function() {
-                    console.log('Periodic device list refresh for', commConfig.provider);
-                    // Try to get device list from server (this might need to be implemented)
-                    // For now, just show a message that device tracking is limited
-                    if (Object.keys(onlinedev).length <= 1) {
-                        populateOnlineDevices({
-                            0: {username: 'admin'}, 
-                            'info': {username: 'Device tracking limited for ' + commConfig.provider.toUpperCase()}
-                        });
-                    }
-                }, 30000);
-            }
         } catch (error) {
             console.error('Failed to initialize admin communication manager:', error);
             $('#communication-status').removeClass('label-success label-grey')

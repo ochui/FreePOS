@@ -624,6 +624,10 @@ function POSAdmin() {
     POS.users = configtable.users;
   }
 
+  this.refreshConfigTable = function () {
+    fetchConfigTable();
+  };
+
   this.getConfigTable = function () {
     if (configtable == null) {
       return false;
