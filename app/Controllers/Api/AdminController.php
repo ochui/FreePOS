@@ -1201,6 +1201,66 @@ class AdminController
         }
         return $this->returnResult();
     }
+    
+    // Get online devices (for non-Socket.IO providers that don't track devices automatically)
+    public function getOnlineDevices()
+    {
+        $this->checkAuthentication();
+        
+        // For now, return a simulated device list since Pusher/Ably don't have real-time device tracking
+        // In a real implementation, this could query active sessions or a device registry
+        $this->result['data'] = [
+            0 => ['username' => 'admin'] // Admin device always present
+            // Additional devices would be tracked through other means (sessions, database, etc.)
+        ];
+        
+        return $this->returnResult();
+    }
+    
+    // Trigger communication updates for Pusher/Ably providers
+    public function triggerCommunicationUpdates()
+    {
+        $this->checkAuthentication();
+        
+        try {
+            $communication = new Communication();
+            $providerInfo = $communication->getProviderInfo();
+            
+            // Only trigger manual updates for providers that need them (not Socket.IO)
+            if ($providerInfo['name'] !== 'Socket.IO') {
+                // Send registration request
+                $regResult = $communication->sendRegreqUpdate();
+                if ($regResult !== true) {
+                    $this->result['error'] = 'Failed to send registration update: ' . $regResult;
+                    return $this->returnResult();
+                }
+                
+                // Send device list update
+                $devices = [0 => ['username' => 'admin']]; // Simulated device list
+                $deviceResult = $communication->sendDeviceListUpdate($devices);
+                if ($deviceResult !== true) {
+                    $this->result['error'] = 'Failed to send device list update: ' . $deviceResult;
+                    return $this->returnResult();
+                }
+                
+                $this->result['data'] = [
+                    'provider' => $providerInfo['name'],
+                    'registration_sent' => true,
+                    'device_list_sent' => true,
+                    'device_count' => count($devices)
+                ];
+            } else {
+                $this->result['data'] = [
+                    'provider' => $providerInfo['name'],
+                    'message' => 'Socket.IO handles updates automatically'
+                ];
+            }
+        } catch (\Exception $e) {
+            $this->result['error'] = 'Communication error: ' . $e->getMessage();
+        }
+        
+        return $this->returnResult();
+    }
 
     // File upload
     public function uploadFile()
