@@ -42,21 +42,37 @@ function POSCommunicationManager() {
      */
     this.initSocketIO = function(config) {
         if (typeof io === 'undefined') {
-            console.error('Socket.IO library not loaded');
+            var error = 'Socket.IO library not loaded. Make sure to include Socket.IO JavaScript library.';
+            console.error(error);
+            self.onError(new Error(error));
             return;
         }
 
-        var socketPath = config.host + ':' + config.port;
-        self.provider = io.connect(socketPath);
+        try {
+            var socketPath = config.host + ':' + config.port;
+            self.provider = io.connect(socketPath);
 
-        // use self for callbacks to avoid losing context
-        self.provider.on('connection', function() { self.onConnect(); });
-        self.provider.on('reconnect', function() { self.onConnect(); });
-        self.provider.on('connect_error', function(error) { self.onError(error); });
-        self.provider.on('reconnect_error', function(error) { self.onError(error); });
-        self.provider.on('error', function(error) { self.onError(error); });
-        self.provider.on('disconnect', function() { self.onDisconnect(); });
-        self.provider.on('updates', function(data) { self.onUpdates(data); });
+            // use self for callbacks to avoid losing context
+            self.provider.on('connection', function() { self.onConnect(); });
+            self.provider.on('reconnect', function() { self.onConnect(); });
+            self.provider.on('connect_error', function(error) { 
+                console.error('Socket.IO connection error:', error);
+                self.onError(error); 
+            });
+            self.provider.on('reconnect_error', function(error) { 
+                console.error('Socket.IO reconnection error:', error);
+                self.onError(error); 
+            });
+            self.provider.on('error', function(error) { 
+                console.error('Socket.IO error:', error);
+                self.onError(error); 
+            });
+            self.provider.on('disconnect', function() { self.onDisconnect(); });
+            self.provider.on('updates', function(data) { self.onUpdates(data); });
+        } catch (error) {
+            console.error('Failed to initialize Socket.IO:', error);
+            self.onError(error);
+        }
     };
 
     /**
@@ -65,19 +81,36 @@ function POSCommunicationManager() {
      */
     this.initPusher = function(config) {
         if (typeof Pusher === 'undefined') {
-            console.error('Pusher library not loaded');
+            var error = 'Pusher library not loaded. Make sure to include Pusher JavaScript library.';
+            console.error(error);
+            self.onError(new Error(error));
             return;
         }
 
-        self.provider = new Pusher(config.key, {
-            cluster: config.cluster || 'us2'
-        });
+        if (!config.key) {
+            var error = 'Pusher API key not configured. Please set pusher_app_key in settings.';
+            console.error(error);
+            self.onError(new Error(error));
+            return;
+        }
 
-        var channel = self.provider.subscribe('pos-updates');
-        channel.bind('pusher:subscription_succeeded', function() { self.onConnect(); });
-        channel.bind('pusher:subscription_error', function(error) { self.onError(error); });
-        channel.bind('updates', function(data) { self.onUpdates(data.data); });
-        channel.bind('session-update', function(data) { self.handleSessionUpdate(data); });
+        try {
+            self.provider = new Pusher(config.key, {
+                cluster: config.cluster || 'us2'
+            });
+
+            var channel = self.provider.subscribe('pos-updates');
+            channel.bind('pusher:subscription_succeeded', function() { self.onConnect(); });
+            channel.bind('pusher:subscription_error', function(error) { 
+                console.error('Pusher subscription error:', error);
+                self.onError(error); 
+            });
+            channel.bind('updates', function(data) { self.onUpdates(data.data); });
+            channel.bind('session-update', function(data) { self.handleSessionUpdate(data); });
+        } catch (error) {
+            console.error('Failed to initialize Pusher:', error);
+            self.onError(error);
+        }
     };
 
     /**
@@ -86,19 +119,36 @@ function POSCommunicationManager() {
      */
     this.initAbly = function(config) {
         if (typeof Ably === 'undefined') {
-            console.error('Ably library not loaded');
+            var error = 'Ably library not loaded. Make sure to include Ably JavaScript library.';
+            console.error(error);
+            self.onError(new Error(error));
             return;
         }
 
-        self.provider = new Ably.Realtime(config.key);
+        if (!config.key) {
+            var error = 'Ably API key not configured. Please set ably_api_key in settings.';
+            console.error(error);
+            self.onError(new Error(error));
+            return;
+        }
 
-        self.provider.connection.on('connected', function() { self.onConnect(); });
-        self.provider.connection.on('disconnected', function() { self.onDisconnect(); });
-        self.provider.connection.on('failed', function(error) { self.onError(error); });
+        try {
+            self.provider = new Ably.Realtime(config.key);
 
-        var channel = self.provider.channels.get('pos-updates');
-        channel.subscribe('updates', function(message) { self.onUpdates(message.data.data); });
-        channel.subscribe('session-update', function(message) { self.handleSessionUpdate(message.data); });
+            self.provider.connection.on('connected', function() { self.onConnect(); });
+            self.provider.connection.on('disconnected', function() { self.onDisconnect(); });
+            self.provider.connection.on('failed', function(error) { 
+                console.error('Ably connection failed:', error);
+                self.onError(error); 
+            });
+
+            var channel = self.provider.channels.get('pos-updates');
+            channel.subscribe('updates', function(message) { self.onUpdates(message.data.data); });
+            channel.subscribe('session-update', function(message) { self.handleSessionUpdate(message.data); });
+        } catch (error) {
+            console.error('Failed to initialize Ably:', error);
+            self.onError(error);
+        }
     };
 
     /**

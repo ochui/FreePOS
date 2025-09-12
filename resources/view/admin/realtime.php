@@ -73,6 +73,9 @@
                 <h4 class="lighter">
                     <i class="icon-desktop green"></i>
                     Online Devices & Messaging
+                    <small id="communication-status" style="margin-left: 15px; font-size: 11px;" class="label label-grey">
+                        <i class="icon-wifi"></i> Connecting...
+                    </small>
                 </h4>
             </div>
 
@@ -252,9 +255,25 @@
 var onlinedev = {};
 var adminCommunicationManager = null;
 
+function restartAdminSocket() {
+    console.log('Restarting admin communication with updated settings...');
+    
+    // Disconnect existing manager if present
+    if (adminCommunicationManager != null) {
+        adminCommunicationManager.disconnect();
+        adminCommunicationManager = null;
+    }
+    
+    // Start new connection with updated settings
+    startAdminSocket();
+}
+
 function startAdminSocket(){
     if (adminCommunicationManager == null){
         adminCommunicationManager = new POSCommunicationManager();
+        
+        // Force refresh configuration to get latest settings
+        POS.refreshConfigTable();
         
         // Get communication configuration from POS config
         var config = POS.getConfigTable().general;
@@ -266,17 +285,52 @@ function startAdminSocket(){
             cluster: config.pusher_app_cluster
         };
         
+        console.log('Admin communication config:', commConfig);
+        
+        // Validate provider libraries are available
+        var libraryAvailable = true;
+        var libraryError = '';
+        
+        if (commConfig.provider === 'pusher' && typeof Pusher === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Pusher library not loaded. Make sure Pusher JavaScript library is included.';
+        } else if (commConfig.provider === 'ably' && typeof Ably === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Ably library not loaded. Make sure Ably JavaScript library is included.';
+        } else if (commConfig.provider === 'socketio' && typeof io === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Socket.IO library not loaded. Make sure Socket.IO JavaScript library is included.';
+        }
+        
+        if (!libraryAvailable) {
+            console.error('Admin communication library error:', libraryError);
+            POS.notifications.error(libraryError, 'Communication Library Error', {delay: 0});
+            return;
+        }
+        
         // Set up event handlers
         adminCommunicationManager.on('connect', function() {
             console.log('Admin communication connected using ' + commConfig.provider);
+            $('#communication-status').removeClass('label-grey label-danger')
+                .addClass('label-success')
+                .html('<i class="icon-ok"></i> Connected via ' + commConfig.provider.toUpperCase());
+            POS.notifications.success('Real-time communication connected using ' + commConfig.provider.toUpperCase(), 'Connected', {delay: 3000});
         });
         
         adminCommunicationManager.on('disconnect', function() {
             console.log('Admin communication disconnected');
+            $('#communication-status').removeClass('label-success')
+                .addClass('label-danger')
+                .html('<i class="icon-remove"></i> Disconnected');
+            POS.notifications.warning('Real-time communication disconnected', 'Disconnected', {delay: 3000});
         });
         
         adminCommunicationManager.on('error', function(error) {
-            console.log('Admin communication error:', error);
+            console.error('Admin communication error:', error);
+            $('#communication-status').removeClass('label-success label-grey')
+                .addClass('label-danger')
+                .html('<i class="icon-warning-sign"></i> Error');
+            POS.notifications.error('Communication error: ' + (error.message || error), 'Connection Error', {delay: 0});
         });
         
         adminCommunicationManager.on('updates', function (data) {
@@ -314,7 +368,20 @@ function startAdminSocket(){
         });
         
         // Initialize the communication provider
-        adminCommunicationManager.init(commConfig);
+        try {
+            $('#communication-status').removeClass('label-success label-danger')
+                .addClass('label-grey')
+                .html('<i class="icon-spinner icon-spin"></i> Connecting via ' + commConfig.provider.toUpperCase() + '...');
+            
+            adminCommunicationManager.init(commConfig);
+            console.log('Admin communication manager initialized successfully with provider:', commConfig.provider);
+        } catch (error) {
+            console.error('Failed to initialize admin communication manager:', error);
+            $('#communication-status').removeClass('label-success label-grey')
+                .addClass('label-danger')
+                .html('<i class="icon-warning-sign"></i> Init Error');
+            POS.notifications.error('Failed to initialize real-time communication: ' + error.message, 'Initialization Error', {delay: 0});
+        }
     }
 }
 
@@ -644,6 +711,15 @@ $(function () {
     stoday = stoday.getTime();
     etime = etime.getTime();
     stime = etime - 36000000;
+    
+    // Listen for configuration updates
+    $(document).on('pos-config-updated', function(event, configKey) {
+        if (configKey === 'general') {
+            console.log('General configuration updated, restarting admin communication...');
+            // Small delay to ensure configuration is saved
+            setTimeout(restartAdminSocket, 1000);
+        }
+    });
     // init graph
     var $tooltip = $("<div class='tooltip top in'><div class='tooltip-inner'></div></div>").hide().appendTo('body');
     var previousPoint = null;

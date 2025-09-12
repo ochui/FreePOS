@@ -595,6 +595,8 @@
         var result = POS.sendJsonData("settings/general/set", JSON.stringify(data));
         if (result !== false){
             POS.setConfigSet('general', result);
+            // Trigger configuration update event for other pages to pick up changes
+            $(document).trigger('pos-config-updated', ['general']);
         }
         // hide loader
         POS.util.hideLoader();
