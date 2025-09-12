@@ -145,4 +145,23 @@ class Communication
         $factory = CommunicationFactory::getInstance();
         return $factory->getAvailableProviders();
     }
+    
+    /**
+     * Send device list update (for providers that need manual device tracking)
+     * @param array $devices Device list
+     * @return bool|string Success status or error message
+     */
+    public function sendDeviceListUpdate($devices)
+    {
+        return $this->provider->sendDeviceListUpdate($devices);
+    }
+    
+    /**
+     * Send registration request (for providers that need manual registration trigger)
+     * @return bool|string Success status or error message
+     */
+    public function sendRegreqUpdate()
+    {
+        return $this->provider->sendRegreqUpdate();
+    }
 }

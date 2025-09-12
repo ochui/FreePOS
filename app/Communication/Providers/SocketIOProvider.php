@@ -84,6 +84,18 @@ class SocketIOProvider implements CommunicationProviderInterface
         return 'Socket.IO';
     }
     
+    public function sendDeviceListUpdate($devices)
+    {
+        // Socket.IO handles device tracking automatically, no manual update needed
+        return true;
+    }
+    
+    public function sendRegreqUpdate()
+    {
+        // Socket.IO handles registration automatically, no manual trigger needed
+        return true;
+    }
+    
     /**
      * Send data to the node.js socket server
      * @param string $event Event name

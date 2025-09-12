@@ -69,6 +69,19 @@ interface CommunicationProviderInterface
     public function sendResetCommand($devices = null);
     
     /**
+     * Send device list update (for providers that don't support real-time device tracking)
+     * @param array $devices Device list
+     * @return bool|string Success status or error message
+     */
+    public function sendDeviceListUpdate($devices);
+    
+    /**
+     * Send registration request update (for providers that need manual registration trigger)
+     * @return bool|string Success status or error message
+     */
+    public function sendRegreqUpdate();
+    
+    /**
      * Check if the provider is available/configured
      * @return bool
      */

@@ -21,7 +21,7 @@ use App\Controllers\Pos\PosData;
 use App\Controllers\Transaction\Transactions;
 use App\Controllers\Invoice\Templates;
 use App\Communication\SocketControl;
-use App\Communication\SocketIO;
+use App\Communication\Communication;
 use App\Integration\GoogleIntegration;
 use App\Integration\XeroIntegration;
 use App\Utility\Logger;
@@ -1163,16 +1163,16 @@ class AdminController
         $this->checkPermission('message/send');
 
         $data = $this->getRequestData();
-        $socket = new SocketIO();
+        $communication = new Communication();
         if ($data->device === null) {
-            if (($error = $socket->sendMessageToDevices(null, $data->message)) !== true) {
+            if (($error = $communication->sendMessageToDevices(null, $data->message)) !== true) {
                 $this->result['error'] = $error;
             }
         } else {
             $devid = intval($data->device);
             $devices = new \stdClass();
             $devices->{$devid} = $devid;
-            if (($error = $socket->sendMessageToDevices($devices, $data->message)) !== true) {
+            if (($error = $communication->sendMessageToDevices($devices, $data->message)) !== true) {
                 $this->result['error'] = $error;
             }
         }
@@ -1186,16 +1186,16 @@ class AdminController
         $this->checkPermission('device/reset');
 
         $data = $this->getRequestData();
-        $socket = new SocketIO();
+        $communication = new Communication();
         if ($data->device === null) {
-            if (($error = $socket->sendResetCommand()) !== true) {
+            if (($error = $communication->sendResetCommand()) !== true) {
                 $this->result['error'] = $error;
             }
         } else {
             $devid = intval($data->device);
             $devices = new \stdClass();
             $devices->{$devid} = $devid;
-            if (($error = $socket->sendResetCommand($devices)) !== true) {
+            if (($error = $communication->sendResetCommand($devices)) !== true) {
                 $this->result['error'] = $error;
             }
         }

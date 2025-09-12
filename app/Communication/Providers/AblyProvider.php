@@ -93,6 +93,46 @@ class AblyProvider implements CommunicationProviderInterface
         return !empty($this->config['ably_api_key']);
     }
     
+    public function sendDeviceListUpdate($devices)
+    {
+        if (!$this->ably) {
+            return 'Ably not configured';
+        }
+        
+        try {
+            $channel = $this->ably->channel($this->channel);
+            $eventData = [
+                'data' => ['a' => 'devices', 'data' => json_encode($devices)],
+                'devices' => null
+            ];
+            
+            $channel->publish('updates', $eventData);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+    
+    public function sendRegreqUpdate()
+    {
+        if (!$this->ably) {
+            return 'Ably not configured';
+        }
+        
+        try {
+            $channel = $this->ably->channel($this->channel);
+            $eventData = [
+                'data' => ['a' => 'regreq', 'data' => ''],
+                'devices' => null
+            ];
+            
+            $channel->publish('updates', $eventData);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+    
     public function getProviderName()
     {
         return 'Ably';

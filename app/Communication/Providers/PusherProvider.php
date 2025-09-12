@@ -101,6 +101,44 @@ class PusherProvider implements CommunicationProviderInterface
                !empty($this->config['pusher_app_secret']);
     }
     
+    public function sendDeviceListUpdate($devices)
+    {
+        if (!$this->pusher) {
+            return 'Pusher not configured';
+        }
+        
+        try {
+            $eventData = [
+                'data' => ['a' => 'devices', 'data' => json_encode($devices)],
+                'devices' => null
+            ];
+            
+            $this->pusher->trigger($this->channel, 'updates', $eventData);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+    
+    public function sendRegreqUpdate()
+    {
+        if (!$this->pusher) {
+            return 'Pusher not configured';
+        }
+        
+        try {
+            $eventData = [
+                'data' => ['a' => 'regreq', 'data' => ''],
+                'devices' => null
+            ];
+            
+            $this->pusher->trigger($this->channel, 'updates', $eventData);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+    
     public function getProviderName()
     {
         return 'Pusher';
