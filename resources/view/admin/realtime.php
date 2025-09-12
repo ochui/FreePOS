@@ -272,9 +272,13 @@ function startAdminSocket(){
     if (adminCommunicationManager == null){
         adminCommunicationManager = new POSCommunicationManager();
     
+        // Force configuration refresh to get the latest settings
+        console.log('Forcing configuration refresh before starting communication...');
+        POS.refreshConfigTable();
         
         // Get communication configuration from POS config
         var config = POS.getConfigTable().general;
+        console.log('Raw config from POS:', config);
         var commConfig = {
             provider: config.communication_provider || 'socketio',
             host: config.feedserver_host || '127.0.0.1',
@@ -335,17 +339,55 @@ function startAdminSocket(){
             console.log("Admin received update:", data);
             switch (data.a){
                 case "devices":
-                    onlinedev = JSON.parse(data.data);
-                    populateOnlineDevices(onlinedev);
+                    console.log('Processing devices update. Raw data:', data.data);
+                    try {
+                        if (typeof data.data === 'string') {
+                            onlinedev = JSON.parse(data.data);
+                        } else if (typeof data.data === 'object') {
+                            onlinedev = data.data;
+                        } else {
+                            console.error('Invalid devices data format:', typeof data.data, data.data);
+                            onlinedev = {};
+                        }
+                        console.log('Parsed devices:', onlinedev);
+                        populateOnlineDevices(onlinedev);
+                    } catch (e) {
+                        console.error('Error parsing devices data:', e, data.data);
+                        populateOnlineDevices({});
+                    }
                     break;
 
                 case "sale":
-                    processIncomingSale(data.data);
+                    console.log('Processing sale update. Raw data:', data.data);
+                    try {
+                        var saleData = data.data;
+                        if (typeof saleData === 'string') {
+                            saleData = JSON.parse(saleData);
+                        }
+                        console.log('Processing sale:', saleData);
+                        processIncomingSale(saleData);
+                    } catch (e) {
+                        console.error('Error processing sale data:', e, data.data);
+                    }
                     break;
 
                 case "regreq":
                     // Register admin device
+                    console.log('Registering admin device for provider:', adminCommunicationManager.getProviderType());
                     adminCommunicationManager.registerDevice({deviceid: 0, username: 'admin'});
+                    
+                    // For Pusher/Ably, manually request initial device list since registration is different
+                    if (adminCommunicationManager.getProviderType() !== 'socketio') {
+                        console.log('Requesting initial device list for non-Socket.IO provider');
+                        // Make an AJAX call to get current online devices 
+                        POS.sendJsonDataAsync("devices/online", JSON.stringify({}), function(devices) {
+                            if (devices !== false) {
+                                console.log('Received device list from server:', devices);
+                                onlinedev = devices;
+                                populateOnlineDevices(onlinedev);
+                            }
+                        });
+                    }
                     break;
 
                 case "config":
@@ -373,6 +415,23 @@ function startAdminSocket(){
             
             adminCommunicationManager.init(commConfig);
             console.log('Admin communication manager initialized successfully with provider:', commConfig.provider);
+            
+            // For Pusher/Ably, set up periodic device list refresh since they don't have real-time device tracking
+            if (commConfig.provider !== 'socketio') {
+                console.log('Setting up periodic device refresh for', commConfig.provider);
+                // Refresh device list every 30 seconds for non-Socket.IO providers
+                setInterval(function() {
+                    console.log('Periodic device list refresh for', commConfig.provider);
+                    // Try to get device list from server (this might need to be implemented)
+                    // For now, just show a message that device tracking is limited
+                    if (Object.keys(onlinedev).length <= 1) {
+                        populateOnlineDevices({
+                            0: {username: 'admin'}, 
+                            'info': {username: 'Device tracking limited for ' + commConfig.provider.toUpperCase()}
+                        });
+                    }
+                }, 30000);
+            }
         } catch (error) {
             console.error('Failed to initialize admin communication manager:', error);
             $('#communication-status').removeClass('label-success label-grey')
@@ -435,6 +494,8 @@ function sendReset() {
 }
 
 function populateOnlineDevices(devices) {
+    console.log('populateOnlineDevices called with:', devices, typeof devices);
+    
     // get list of active devices from the node feed server
     var devtable = $("#onlinedevices");
     var devselect = $("#msgdevice");
@@ -443,9 +504,18 @@ function populateOnlineDevices(devices) {
 
     devselect.append("<option value='all' selected>All</option>");
 
+    // Handle case where devices is undefined, null, or not an object
+    if (!devices || typeof devices !== 'object') {
+        console.warn('Devices data is invalid:', devices);
+        devtable.append("<tr><td style='color: orange;'>No device data received (Provider: " + (adminCommunicationManager ? adminCommunicationManager.getProviderType() : 'unknown') + ")</td></tr>");
+        return;
+    }
+
     if (Object.keys(devices).length > 1) { // devices will always have the admin dash
+        var deviceCount = 0;
         for (var i in devices) {
             if (i != 0) { // do not include admin dash
+                deviceCount++;
                 var devname, locname;
                 if (POS.devices.hasOwnProperty(i)){
                     devname = POS.devices[i].name;
@@ -458,7 +528,9 @@ function populateOnlineDevices(devices) {
                 devselect.append("<option value='" + i + "'>" + devices[i].username + " / " + devname + " / " + locname + "</option>");
             }
         }
+        console.log('Populated', deviceCount, 'online devices');
     } else {
+        console.log('No online devices found (only admin or empty)');
         devtable.append("<tr><td>There are no online devices.</td></tr>");
     }
 }

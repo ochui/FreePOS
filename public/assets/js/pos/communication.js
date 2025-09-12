@@ -50,11 +50,18 @@ function POSCommunicationManager() {
 
         try {
             var socketPath = config.host + ':' + config.port;
+            console.log('Connecting to Socket.IO server:', socketPath);
             self.provider = io.connect(socketPath);
 
             // use self for callbacks to avoid losing context
-            self.provider.on('connection', function() { self.onConnect(); });
-            self.provider.on('reconnect', function() { self.onConnect(); });
+            self.provider.on('connect', function() { 
+                console.log('Socket.IO connected successfully');
+                self.onConnect(); 
+            });
+            self.provider.on('reconnect', function() { 
+                console.log('Socket.IO reconnected');
+                self.onConnect(); 
+            });
             self.provider.on('connect_error', function(error) { 
                 console.error('Socket.IO connection error:', error);
                 self.onError(error); 
@@ -67,8 +74,14 @@ function POSCommunicationManager() {
                 console.error('Socket.IO error:', error);
                 self.onError(error); 
             });
-            self.provider.on('disconnect', function() { self.onDisconnect(); });
-            self.provider.on('updates', function(data) { self.onUpdates(data); });
+            self.provider.on('disconnect', function() { 
+                console.log('Socket.IO disconnected');
+                self.onDisconnect(); 
+            });
+            self.provider.on('updates', function(data) { 
+                console.log('Socket.IO received update:', data);
+                self.onUpdates(data); 
+            });
         } catch (error) {
             console.error('Failed to initialize Socket.IO:', error);
             self.onError(error);
@@ -100,12 +113,28 @@ function POSCommunicationManager() {
             });
 
             var channel = self.provider.subscribe('pos-updates');
-            channel.bind('pusher:subscription_succeeded', function() { self.onConnect(); });
+            channel.bind('pusher:subscription_succeeded', function() { 
+                console.log('Pusher channel subscribed successfully');
+                self.onConnect();
+                // For Pusher/Ably, we need to trigger device registration manually
+                // since there's no Socket.IO style "regreq" event
+                setTimeout(function() {
+                    self.onUpdates({ a: "regreq", data: "" });
+                }, 100);
+            });
             channel.bind('pusher:subscription_error', function(error) { 
                 console.error('Pusher subscription error:', error);
                 self.onError(error); 
             });
-            channel.bind('updates', function(data) { self.onUpdates(data.data); });
+            channel.bind('updates', function(data) { 
+                console.log('Pusher received data:', data);
+                // Handle the nested data structure from Pusher
+                if (data && data.data) {
+                    self.onUpdates(data.data);
+                } else {
+                    self.onUpdates(data);
+                }
+            });
             channel.bind('session-update', function(data) { self.handleSessionUpdate(data); });
         } catch (error) {
             console.error('Failed to initialize Pusher:', error);
@@ -135,7 +164,15 @@ function POSCommunicationManager() {
         try {
             self.provider = new Ably.Realtime(config.key);
 
-            self.provider.connection.on('connected', function() { self.onConnect(); });
+            self.provider.connection.on('connected', function() { 
+                console.log('Ably connected successfully');
+                self.onConnect();
+                // For Pusher/Ably, we need to trigger device registration manually
+                // since there's no Socket.IO style "regreq" event
+                setTimeout(function() {
+                    self.onUpdates({ a: "regreq", data: "" });
+                }, 100);
+            });
             self.provider.connection.on('disconnected', function() { self.onDisconnect(); });
             self.provider.connection.on('failed', function(error) { 
                 console.error('Ably connection failed:', error);
@@ -143,7 +180,17 @@ function POSCommunicationManager() {
             });
 
             var channel = self.provider.channels.get('pos-updates');
-            channel.subscribe('updates', function(message) { self.onUpdates(message.data.data); });
+            channel.subscribe('updates', function(message) { 
+                console.log('Ably received message:', message);
+                // Handle the nested data structure from Ably
+                if (message && message.data && message.data.data) {
+                    self.onUpdates(message.data.data);
+                } else if (message && message.data) {
+                    self.onUpdates(message.data);
+                } else {
+                    self.onUpdates(message);
+                }
+            });
             channel.subscribe('session-update', function(message) { self.handleSessionUpdate(message.data); });
         } catch (error) {
             console.error('Failed to initialize Ably:', error);
