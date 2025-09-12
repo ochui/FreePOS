@@ -1392,7 +1392,7 @@ function POS() {
     
     function startSocket(){
         if (communicationManager == null){
-            communicationManager = new CommunicationManager();
+            communicationManager = new POSCommunicationManager();
             
             // Get communication configuration
             var config = POS.getConfigTable().general;
