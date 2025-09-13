@@ -332,7 +332,7 @@ function startAdminSocket(){
             $('#communication-status').removeClass('label-success label-grey')
                 .addClass('label-danger')
                 .html('<i class="icon-warning-sign"></i> Error');
-            POS.notifications.error('Communication error: ' + (error.message || error), 'Connection Error', {delay: 0});
+            //POS.notifications.error('Communication error: ' + (error.message || error), 'Connection Error', {delay: 0});
         });
         
         adminCommunicationManager.on('updates', function (data) {
