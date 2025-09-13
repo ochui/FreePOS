@@ -10,6 +10,7 @@ function POSCommunicationManager() {
     this.connected = false;
     this.deviceId = null;
     this.username = null;
+    this.registrationTriggered = false;
     this.callbacks = {
         connect: [],
         disconnect: [],
@@ -365,10 +366,11 @@ function POSCommunicationManager() {
             try { self.callbacks.connect[i](); } catch (e) { console.error(e); }
         }
         
-        // For Pusher/Ably, trigger registration request after connection
-        if (self.providerType !== 'socketio') {
+        // For Pusher/Ably, trigger registration request after connection only if not already triggered
+        if (self.providerType !== 'socketio' && !self.registrationTriggered) {
             setTimeout(function() {
-                console.log('Triggering registration request for ' + self.providerType);
+                console.log('Triggering initial registration request for ' + self.providerType);
+                self.registrationTriggered = true;
                 self.onUpdates({ a: "regreq", data: "" });
             }, 100);
         }
@@ -376,6 +378,7 @@ function POSCommunicationManager() {
 
     this.onDisconnect = function() {
         self.connected = false;
+        self.registrationTriggered = false; // Reset registration flag on disconnect
         for (var i = 0; i < self.callbacks.disconnect.length; i++) {
             try { self.callbacks.disconnect[i](); } catch (e) { console.error(e); }
         }

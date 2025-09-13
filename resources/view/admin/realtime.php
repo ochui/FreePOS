@@ -376,18 +376,11 @@ function startAdminSocket(){
                     console.log('Registering admin device for provider:', adminCommunicationManager.getProviderType());
                     adminCommunicationManager.registerDevice({deviceid: 0, username: 'admin'});
                     
-                    // For Pusher/Ably, trigger server-side updates since they don't have real-time device tracking
+                    // For Pusher/Ably, only request current device list (don't trigger more regreq events)
                     if (adminCommunicationManager.getProviderType() !== 'socketio') {
-                        console.log('Triggering communication updates for non-Socket.IO provider');
-                        POS.sendJsonDataAsync("communication/trigger-updates", JSON.stringify({}), function(result) {
-                            if (result !== false) {
-                                console.log('Communication updates triggered:', result);
-                            } else {
-                                console.warn('Failed to trigger communication updates');
-                            }
-                        });
+                        console.log('Requesting current device list for non-Socket.IO provider');
                         
-                        // Also request initial device list
+                        // Request initial device list
                         POS.sendJsonDataAsync("devices/online", JSON.stringify({}), function(devices) {
                             if (devices !== false) {
                                 console.log('Received device list from server:', devices);
