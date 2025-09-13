@@ -254,34 +254,6 @@ class AdminUtilities
     }
 
     /**
-     *  Backup database and init download.
-     * @param bool $download
-     * @throws Exception
-     */
-    public static function backUpDatabase($download = true)
-    {
-        $conf = DbConfig::getConf();
-        $dump = new IMysqldump\Mysqldump('mysql:host=' . $conf['host'] . ';dbname=' . $conf['db'], $conf['user'], $conf['pass']);
-        $fname = storage_path('backup/dbbackup-' . date("Y-m-d_H-i-s") . '.sql');
-        $dump->start($fname);
-        if ($download) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($fname) . '"'); //<<< Note the " " surrounding the file name
-            header('Content-Transfer-Encoding: binary');
-            header('Connection: Keep-Alive');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($fname));
-            readfile($fname);
-        }
-        // unlink($fname); TODO: Option to keep on server
-        // log data
-        Logger::write("Database backed up", "UTIL");
-    }
-
-    /**
      * Archive a range of sales records
      */
     function archiveSalesRecords()

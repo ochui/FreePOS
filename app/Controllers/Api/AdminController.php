@@ -1086,47 +1086,6 @@ class AdminController
         return $this->returnResult();
     }
 
-    // Node/Socket management
-    public function getNodeStatus()
-    {
-        $this->checkAuthentication();
-        $this->checkPermission('node/status');
-
-        $Sserver = new SocketControl();
-        $this->result = $Sserver->isServerRunning($this->result);
-        return $this->returnResult();
-    }
-
-    public function startNode()
-    {
-        $this->checkAuthentication();
-        $this->checkPermission('node/start');
-
-        $Sserver = new SocketControl();
-        $this->result = $Sserver->startSocketServer($this->result);
-        return $this->returnResult();
-    }
-
-    public function stopNode()
-    {
-        $this->checkAuthentication();
-        $this->checkPermission('node/stop');
-
-        $Sserver = new SocketControl();
-        $this->result = $Sserver->stopSocketServer($this->result);
-        return $this->returnResult();
-    }
-
-    public function restartNode()
-    {
-        $this->checkAuthentication();
-        $this->checkPermission('node/restart');
-
-        $Sserver = new SocketControl();
-        $this->result = $Sserver->restartSocketServer($this->result);
-        return $this->returnResult();
-    }
-
     // Logging
     public function listLogs()
     {
@@ -1145,16 +1104,6 @@ class AdminController
         $data = $this->getRequestData();
         $this->result['data'] = Logger::read($data->filename);
         return $this->returnResult();
-    }
-
-    // Database backup
-    public function backupDatabase()
-    {
-        $this->checkAuthentication();
-        $this->checkPermission('db/backup');
-
-        $util = new AdminUtilities();
-        $util->backUpDatabase();
     }
 
     // Message sending

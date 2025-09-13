@@ -30,13 +30,8 @@
     margin-bottom: 0 !important;
 }
 #reportcontain {
-    width: 650px;
     position: relative;
     margin: 0 auto;
-    border: solid 1px #ccc;
-    -moz-box-shadow: 3px 3px 5px 6px #ccc;
-    -webkit-box-shadow: 3px 3px 5px 6px #ccc;
-    box-shadow: 3px 3px 5px 6px #ccc;
     min-height: 800px;
     overflow-x: auto !important;
 }

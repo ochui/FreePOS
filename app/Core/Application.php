@@ -171,18 +171,11 @@ class Application
             $r->addRoute(['GET', 'POST'], '/api/tax/items/edit', [AdminController::class, 'editTaxItem']);
             $r->addRoute(['GET', 'POST'], '/api/tax/items/delete', [AdminController::class, 'deleteTaxItem']);
 
-            // Node/Socket management
-            $r->addRoute(['GET', 'POST'], '/api/node/status', [AdminController::class, 'getNodeStatus']);
-            $r->addRoute(['GET', 'POST'], '/api/node/start', [AdminController::class, 'startNode']);
-            $r->addRoute(['GET', 'POST'], '/api/node/stop', [AdminController::class, 'stopNode']);
-            $r->addRoute(['GET', 'POST'], '/api/node/restart', [AdminController::class, 'restartNode']);
-
             // Logging
             $r->addRoute(['GET', 'POST'], '/api/logs/list', [AdminController::class, 'listLogs']);
             $r->addRoute(['GET', 'POST'], '/api/logs/read', [AdminController::class, 'readLog']);
 
-            // Database and utilities
-            $r->addRoute(['GET', 'POST'], '/api/db/backup', [AdminController::class, 'backupDatabase']);
+            // Utilities
             $r->addRoute(['GET', 'POST'], '/api/message/send', [AdminController::class, 'sendMessage']);
             $r->addRoute(['GET', 'POST'], '/api/device/reset', [AdminController::class, 'resetDevice']);
             $r->addRoute(['GET', 'POST'], '/api/devices/online', [AdminController::class, 'getOnlineDevices']);
