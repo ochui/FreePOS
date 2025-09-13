@@ -73,6 +73,9 @@
                 <h4 class="lighter">
                     <i class="icon-desktop green"></i>
                     Online Devices & Messaging
+                    <small id="communication-status" style="margin-left: 15px; font-size: 11px;" class="label label-grey">
+                        <i class="icon-wifi"></i> Connecting...
+                    </small>
                 </h4>
             </div>
 
@@ -247,8 +250,182 @@
 </div>
 <div class="hr hr32 hr-dotted"></div>
 
+<script type="text/javascript" src="../assets/js/pos/communication.js"></script>
 <script type="text/javascript">
 var onlinedev = {};
+var adminCommunicationManager = null;
+
+function restartAdminSocket() {
+    console.log('Restarting admin communication with updated settings...');
+    
+    // Disconnect existing manager if present
+    if (adminCommunicationManager != null) {
+        adminCommunicationManager.disconnect();
+        adminCommunicationManager = null;
+    }
+    
+    // Start new connection with updated settings
+    startAdminSocket();
+}
+
+function startAdminSocket(){
+    if (adminCommunicationManager == null){
+        adminCommunicationManager = new POSCommunicationManager();
+    
+        // Force configuration refresh to get the latest settings
+        console.log('Forcing configuration refresh before starting communication...');
+        POS.refreshConfigTable();
+        
+        // Get communication configuration from POS config
+        var config = POS.getConfigTable().general;
+        console.log('Raw config from POS:', config);
+        var commConfig = {
+            provider: config.communication_provider || 'socketio',
+            host: config.feedserver_host || '127.0.0.1',
+            port: config.feedserver_port || 3000,
+            key: config.communication_provider === 'pusher' ? config.pusher_app_key : (config.communication_provider === 'ably' ? config.ably_api_key : null),
+            cluster: config.pusher_app_cluster
+        };
+        
+        console.log('Admin communication config:', commConfig);
+        
+        // Validate provider libraries are available
+        var libraryAvailable = true;
+        var libraryError = '';
+        
+        if (commConfig.provider === 'pusher' && typeof Pusher === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Pusher library not loaded. Make sure Pusher JavaScript library is included.';
+        } else if (commConfig.provider === 'ably' && typeof Ably === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Ably library not loaded. Make sure Ably JavaScript library is included.';
+        } else if (commConfig.provider === 'socketio' && typeof io === 'undefined') {
+            libraryAvailable = false;
+            libraryError = 'Socket.IO library not loaded. Make sure Socket.IO JavaScript library is included.';
+        }
+        
+        if (!libraryAvailable) {
+            console.error('Admin communication library error:', libraryError);
+            POS.notifications.error(libraryError, 'Communication Library Error', {delay: 0});
+            return;
+        }
+        
+        // Set up event handlers
+        adminCommunicationManager.on('connect', function() {
+            console.log('Admin communication connected using ' + commConfig.provider);
+            $('#communication-status').removeClass('label-grey label-danger')
+                .addClass('label-success')
+                .html('<i class="icon-ok"></i> Connected via ' + commConfig.provider.toUpperCase());
+            POS.notifications.success('Real-time communication connected using ' + commConfig.provider.toUpperCase(), 'Connected', {delay: 3000});
+        });
+        
+        adminCommunicationManager.on('disconnect', function() {
+            console.log('Admin communication disconnected');
+            $('#communication-status').removeClass('label-success')
+                .addClass('label-danger')
+                .html('<i class="icon-remove"></i> Disconnected');
+            POS.notifications.warning('Real-time communication disconnected', 'Disconnected', {delay: 3000});
+        });
+        
+        adminCommunicationManager.on('error', function(error) {
+            console.error('Admin communication error:', error);
+            $('#communication-status').removeClass('label-success label-grey')
+                .addClass('label-danger')
+                .html('<i class="icon-warning-sign"></i> Error');
+            POS.notifications.error('Communication error: ' + (error.message || error), 'Connection Error', {delay: 0});
+        });
+        
+        adminCommunicationManager.on('updates', function (data) {
+            console.log("Admin received update:", data);
+            switch (data.a){
+                case "devices":
+                    console.log('Processing devices update. Raw data:', data.data);
+                    try {
+                        if (typeof data.data === 'string') {
+                            onlinedev = JSON.parse(data.data);
+                        } else if (typeof data.data === 'object') {
+                            onlinedev = data.data;
+                        } else {
+                            console.error('Invalid devices data format:', typeof data.data, data.data);
+                            onlinedev = {};
+                        }
+                        console.log('Parsed devices:', onlinedev);
+                        populateOnlineDevices(onlinedev);
+                    } catch (e) {
+                        console.error('Error parsing devices data:', e, data.data);
+                        populateOnlineDevices({});
+                    }
+                    break;
+
+                case "sale":
+                    console.log('Processing sale update. Raw data:', data.data);
+                    try {
+                        var saleData = data.data;
+                        if (typeof saleData === 'string') {
+                            saleData = JSON.parse(saleData);
+                        }
+                        console.log('Processing sale:', saleData);
+                        processIncomingSale(saleData);
+                    } catch (e) {
+                        console.error('Error processing sale data:', e, data.data);
+                    }
+                    break;
+
+                case "regreq":
+                    // Register admin device
+                    console.log('Registering admin device for provider:', adminCommunicationManager.getProviderType());
+                    adminCommunicationManager.registerDevice({deviceid: 0, username: 'admin'});
+                    
+                    // For Pusher/Ably, only request current device list (don't trigger more regreq events)
+                    if (adminCommunicationManager.getProviderType() !== 'socketio') {
+                        console.log('Requesting current device list for non-Socket.IO provider');
+                        
+                        // Request initial device list
+                        POS.sendJsonDataAsync("devices/online", JSON.stringify({}), function(devices) {
+                            if (devices !== false) {
+                                console.log('Received device list from server:', devices);
+                                onlinedev = devices;
+                                populateOnlineDevices(onlinedev);
+                            }
+                        });
+                    }
+                    break;
+
+                case "config":
+                    if (data.type == "deviceconfig") {
+                        if (data.data.hasOwnProperty("a")) {
+                            if (data.data.a == "removed") delete POS.devices[data.id];
+                        } else {
+                            POS.devices[data.data.id] = data.data;
+                            POS.locations[data.data.locationid] = { name: data.data.locationname };
+                        }
+                    }
+                    break;
+
+                case "error":
+                    console.error("Socket error:", data);
+                    break;
+            }
+        });
+        
+        // Initialize the communication provider
+        try {
+            $('#communication-status').removeClass('label-success label-danger')
+                .addClass('label-grey')
+                .html('<i class="icon-spinner icon-spin"></i> Connecting via ' + commConfig.provider.toUpperCase() + '...');
+            
+            adminCommunicationManager.init(commConfig);
+            console.log('Admin communication manager initialized successfully with provider:', commConfig.provider);
+            
+        } catch (error) {
+            console.error('Failed to initialize admin communication manager:', error);
+            $('#communication-status').removeClass('label-success label-grey')
+                .addClass('label-danger')
+                .html('<i class="icon-warning-sign"></i> Init Error');
+            POS.notifications.error('Failed to initialize real-time communication: ' + error.message, 'Initialization Error', {delay: 0});
+        }
+    }
+}
 
 function sendMessage() {
     if (Object.keys(onlinedev).length <= 1) {
@@ -302,6 +479,8 @@ function sendReset() {
 }
 
 function populateOnlineDevices(devices) {
+    console.log('populateOnlineDevices called with:', devices, typeof devices);
+    
     // get list of active devices from the node feed server
     var devtable = $("#onlinedevices");
     var devselect = $("#msgdevice");
@@ -310,9 +489,18 @@ function populateOnlineDevices(devices) {
 
     devselect.append("<option value='all' selected>All</option>");
 
+    // Handle case where devices is undefined, null, or not an object
+    if (!devices || typeof devices !== 'object') {
+        console.warn('Devices data is invalid:', devices);
+        devtable.append("<tr><td style='color: orange;'>No device data received (Provider: " + (adminCommunicationManager ? adminCommunicationManager.getProviderType() : 'unknown') + ")</td></tr>");
+        return;
+    }
+
     if (Object.keys(devices).length > 1) { // devices will always have the admin dash
+        var deviceCount = 0;
         for (var i in devices) {
             if (i != 0) { // do not include admin dash
+                deviceCount++;
                 var devname, locname;
                 if (POS.devices.hasOwnProperty(i)){
                     devname = POS.devices[i].name;
@@ -325,7 +513,9 @@ function populateOnlineDevices(devices) {
                 devselect.append("<option value='" + i + "'>" + devices[i].username + " / " + devname + " / " + locname + "</option>");
             }
         }
+        console.log('Populated', deviceCount, 'online devices');
     } else {
+        console.log('No online devices found (only admin or empty)');
         devtable.append("<tr><td>There are no online devices.</td></tr>");
     }
 }
@@ -576,6 +766,15 @@ $(function () {
     stoday = stoday.getTime();
     etime = etime.getTime();
     stime = etime - 36000000;
+    
+    // Listen for configuration updates
+    $(document).on('pos-config-updated', function(event, configKey) {
+        if (configKey === 'general') {
+            console.log('General configuration updated, restarting admin communication...');
+            // Small delay to ensure configuration is saved
+            setTimeout(restartAdminSocket, 1000);
+        }
+    });
     // init graph
     var $tooltip = $("<div class='tooltip top in'><div class='tooltip-inner'></div></div>").hide().appendTo('body');
     var previousPoint = null;
@@ -611,7 +810,7 @@ $(function () {
     chart.on('plotclick', clickgraph);
     chart.css({'width': '100%', 'height': '220px'});
     // load data
-    POS.startSocket();
+    startAdminSocket();
     
     // Create parallel requests
     var salesPromise = new Promise(function(resolve, reject) {

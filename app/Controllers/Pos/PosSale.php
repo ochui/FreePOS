@@ -12,7 +12,7 @@ namespace App\Controllers\Pos;
 use App\Controllers\Admin\AdminCustomers;
 use App\Controllers\Admin\AdminSettings;
 use App\Controllers\Admin\AdminStock;
-use App\Communication\SocketIO;
+use App\Communication\Communication;
 use App\Controllers\Invoice\TemplateData;
 use App\Controllers\Invoice\Templates;
 use App\Controllers\Transaction\Transactions;
@@ -610,7 +610,7 @@ class PosSale
      */
     private function broadcastSale($curdeviceid, $updatedsaleflag = false, $delete = false)
     {
-        $socket = new SocketIO();
+        $communication = new Communication();
         $posConfig = new AdminSettings();
         $config = $posConfig->getSettingsObject("pos");
         $devices = [];
@@ -642,7 +642,7 @@ class PosSale
             $this->jsonobj->isupdate = 1;
         }
 
-        $socket->sendSaleUpdate($dobject, ($delete ? $this->jsonobj->ref : $this->jsonobj));
+        $communication->sendSaleUpdate($dobject, ($delete ? $this->jsonobj->ref : $this->jsonobj));
 
         return true;
     }

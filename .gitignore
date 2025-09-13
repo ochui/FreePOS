@@ -1,11 +1,12 @@
 .idea/
 .jshintrc
 nbproject
-storage/backup/
-storage/logs/
-storage/templates/
+storage/
 test-sw.html
 vendor/
+
+# Node.js dependencies
+api/node_modules/
 
 # Build artifacts
 *.min.js.map

@@ -21,7 +21,8 @@ use App\Controllers\Pos\PosData;
 use App\Controllers\Transaction\Transactions;
 use App\Controllers\Invoice\Templates;
 use App\Communication\SocketControl;
-use App\Communication\SocketIO;
+use App\Communication\Communication;
+use App\Communication\DeviceRegistry;
 use App\Integration\GoogleIntegration;
 use App\Integration\XeroIntegration;
 use App\Utility\Logger;
@@ -1163,16 +1164,16 @@ class AdminController
         $this->checkPermission('message/send');
 
         $data = $this->getRequestData();
-        $socket = new SocketIO();
+        $communication = new Communication();
         if ($data->device === null) {
-            if (($error = $socket->sendMessageToDevices(null, $data->message)) !== true) {
+            if (($error = $communication->sendMessageToDevices(null, $data->message)) !== true) {
                 $this->result['error'] = $error;
             }
         } else {
             $devid = intval($data->device);
             $devices = new \stdClass();
             $devices->{$devid} = $devid;
-            if (($error = $socket->sendMessageToDevices($devices, $data->message)) !== true) {
+            if (($error = $communication->sendMessageToDevices($devices, $data->message)) !== true) {
                 $this->result['error'] = $error;
             }
         }
@@ -1186,19 +1187,109 @@ class AdminController
         $this->checkPermission('device/reset');
 
         $data = $this->getRequestData();
-        $socket = new SocketIO();
+        $communication = new Communication();
         if ($data->device === null) {
-            if (($error = $socket->sendResetCommand()) !== true) {
+            if (($error = $communication->sendResetCommand()) !== true) {
                 $this->result['error'] = $error;
             }
         } else {
             $devid = intval($data->device);
             $devices = new \stdClass();
             $devices->{$devid} = $devid;
-            if (($error = $socket->sendResetCommand($devices)) !== true) {
+            if (($error = $communication->sendResetCommand($devices)) !== true) {
                 $this->result['error'] = $error;
             }
         }
+        return $this->returnResult();
+    }
+    
+    // Get online devices (for non-Socket.IO providers that don't track devices automatically)
+    public function getOnlineDevices()
+    {
+        $this->checkAuthentication();
+        
+        // Get devices from registry for Pusher/Ably, or use simulated data
+        $devices = DeviceRegistry::getDevicesFormatted();
+        
+        // Make sure admin device (ID 0) is always present
+        if (!isset($devices[0])) {
+            $devices[0] = ['username' => 'admin', 'socketid' => 'admin-sim'];
+        }
+        
+        $this->result['data'] = $devices;
+        return $this->returnResult();
+    }
+    
+    // Register a device in the device registry
+    public function registerDevice()
+    {
+        $data = $this->getRequestData();
+        if (!$data || !isset($data->deviceid) || !isset($data->username)) {
+            $this->result['error'] = 'Device ID and username are required';
+            return $this->returnResult();
+        }
+
+        $deviceId = intval($data->deviceid);
+        $username = $data->username;
+        $metadata = $data->metadata ?? [];
+
+        try {
+            DeviceRegistry::registerDevice($deviceId, $username, $metadata);
+            
+            // Send device list update to all providers
+            $communication = new Communication();
+            $devices = DeviceRegistry::getDevicesFormatted();
+            $communication->sendDeviceListUpdate($devices);
+            
+            $this->result['data'] = 'Device registered successfully';
+            
+        } catch (\Exception $e) {
+            $this->result['error'] = 'Error registering device: ' . $e->getMessage();
+        }
+        
+        return $this->returnResult();
+    }
+    
+    // Trigger communication updates for Pusher/Ably providers
+    public function triggerCommunicationUpdates()
+    {
+        $this->checkAuthentication();
+        
+        try {
+            $communication = new Communication();
+            $providerInfo = $communication->getProviderInfo();
+            
+            // Only trigger manual updates for providers that need them (not Socket.IO)
+            if ($providerInfo['name'] !== 'Socket.IO') {
+                // Send registration request
+                $regResult = $communication->sendRegreqUpdate();
+                if ($regResult !== true) {
+                    $this->result['error'] = 'Failed to send registration update: ' . $regResult;
+                    return $this->returnResult();
+                }
+                
+                // Send device list update using registry
+                $devices = DeviceRegistry::getDevicesFormatted();
+                // Make sure admin device is present
+                if (!isset($devices[0])) {
+                    $devices[0] = ['deviceid' => 0, 'username' => 'admin', 'socketid' => 'admin-sim'];
+                }
+                
+                $deviceResult = $communication->sendDeviceListUpdate($devices);
+                if ($deviceResult !== true) {
+                    $this->result['error'] = 'Failed to send device list update: ' . $deviceResult;
+                    return $this->returnResult();
+                }
+                
+                $this->result['data'] = 'Communication updates triggered successfully';
+            } else {
+                $this->result['data'] = 'No manual updates needed for Socket.IO';
+            }
+            
+        } catch (\Exception $e) {
+            $this->result['error'] = 'Error triggering communication updates: ' . $e->getMessage();
+        }
+        
         return $this->returnResult();
     }
 
