@@ -1,9 +1,7 @@
 .idea/
 .jshintrc
 nbproject
-storage/backup/
-storage/logs/
-storage/templates/
+storage/
 test-sw.html
 vendor/
 
