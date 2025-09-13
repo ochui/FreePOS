@@ -7,6 +7,9 @@
 
 namespace App\Communication;
 
+use App\Utility\Logger;
+
+
 class DeviceRegistry
 {
     private static $devices = [];
@@ -26,8 +29,8 @@ class DeviceRegistry
             'connected_at' => time(),
             'metadata' => $metadata
         ];
-        
-        error_log("Device registered: ID=$deviceId, Username=$username");
+
+        Logger::write("Device registered: ID=$deviceId, Username=$username", "DEVICE");
         return true;
     }
     
@@ -39,7 +42,7 @@ class DeviceRegistry
     {
         if (isset(self::$devices[$deviceId])) {
             unset(self::$devices[$deviceId]);
-            error_log("Device unregistered: ID=$deviceId");
+            Logger::write("Device unregistered: ID=$deviceId", "DEVICE");
             return true;
         }
         return false;
@@ -126,7 +129,7 @@ class DeviceRegistry
         }
         
         if ($removed > 0) {
-            error_log("Cleaned up $removed old devices");
+            Logger::write("Cleaned up $removed old devices", "DEVICE");
         }
         
         return $removed;

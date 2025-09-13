@@ -1223,21 +1223,16 @@ class AdminController
     // Register a device in the device registry
     public function registerDevice()
     {
-        // Allow both authenticated and unauthenticated access for device registration
-        // This is needed because POS devices may register before full authentication
-        
-        $jsondata = file_get_contents("php://input");
-        $data = json_decode($jsondata, true);
-        
-        if (!$data || !isset($data['deviceid']) || !isset($data['username'])) {
+        $data = $this->getRequestData();
+        if (!$data || !isset($data->deviceid) || !isset($data->username)) {
             $this->result['error'] = 'Device ID and username are required';
             return $this->returnResult();
         }
-        
-        $deviceId = intval($data['deviceid']);
-        $username = $data['username'];
-        $metadata = $data['metadata'] ?? [];
-        
+
+        $deviceId = intval($data->deviceid);
+        $username = $data->username;
+        $metadata = $data->metadata ?? [];
+
         try {
             DeviceRegistry::registerDevice($deviceId, $username, $metadata);
             
@@ -1277,7 +1272,7 @@ class AdminController
                 $devices = DeviceRegistry::getDevicesFormatted();
                 // Make sure admin device is present
                 if (!isset($devices[0])) {
-                    $devices[0] = ['username' => 'admin', 'socketid' => 'admin-sim'];
+                    $devices[0] = ['deviceid' => 0, 'username' => 'admin', 'socketid' => 'admin-sim'];
                 }
                 
                 $deviceResult = $communication->sendDeviceListUpdate($devices);

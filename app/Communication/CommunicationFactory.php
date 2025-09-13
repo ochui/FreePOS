@@ -12,12 +12,14 @@ use App\Communication\Providers\SocketIOProvider;
 use App\Communication\Providers\PusherProvider;
 use App\Communication\Providers\AblyProvider;
 use App\Controllers\Admin\AdminSettings;
+use App\Database\ConfigModel;
+use App\Utility\Logger;
 
 class CommunicationFactory
 {
     private static $instance = null;
     private $provider = null;
-    
+
     /**
      * Get singleton instance
      */
@@ -28,7 +30,7 @@ class CommunicationFactory
         }
         return self::$instance;
     }
-    
+
     /**
      * Get the configured communication provider
      * @return CommunicationProviderInterface
@@ -40,7 +42,7 @@ class CommunicationFactory
         }
         return $this->provider;
     }
-    
+
     /**
      * Create a communication provider based on configuration
      * @return CommunicationProviderInterface
@@ -48,49 +50,35 @@ class CommunicationFactory
     private function createProvider()
     {
         $config = $this->getConfig();
-        $providerName = $config['communication_provider'] ?? 'socketio';
-        
+        $providerName = $config['communication_provider'] ?? 'pusher';
+
         switch ($providerName) {
             case 'pusher':
                 return new PusherProvider($config);
-                
+
             case 'ably':
                 return new AblyProvider($config);
-                
+
             case 'socketio':
             default:
                 return new SocketIOProvider($config);
         }
     }
-    
+
     /**
      * Get configuration from app config and database
      * @return array
      */
     private function getConfig()
     {
-        $config = [];
-        
-        // Load configuration from app.php
-        try {
-            $appConfig = require base_path() . '/config/app.php';
-            $config = array_merge($config, $appConfig);
-        } catch (\Exception $e) {
-            // If app config fails, use defaults
+        $confMdl = new ConfigModel();
+        $conf = $confMdl->get('general');
+        if (empty($conf)) {
+            return [];
         }
-        
-        // Try to get additional config from database
-        try {
-            $dbConfig = AdminSettings::getConfigFileValues(true);
-            $dbConfigArray = (array) $dbConfig;
-            $config = array_merge($config, $dbConfigArray);
-        } catch (\Exception | \Error $e) {
-            // If database config fails, use app config only
-        }
-        
-        return $config;
+        return json_decode($conf[0]['data'], true);
     }
-    
+
     /**
      * Get all available providers
      * @return array
@@ -99,7 +87,7 @@ class CommunicationFactory
     {
         $config = $this->getConfig();
         $providers = [];
-        
+
         // Socket.IO
         try {
             $socketIO = new SocketIOProvider($config);
@@ -115,7 +103,7 @@ class CommunicationFactory
                 'configured' => false
             ];
         }
-        
+
         // Pusher
         try {
             $pusher = new PusherProvider($config);
@@ -131,7 +119,7 @@ class CommunicationFactory
                 'configured' => false
             ];
         }
-        
+
         // Ably
         try {
             $ably = new AblyProvider($config);
@@ -147,10 +135,10 @@ class CommunicationFactory
                 'configured' => false
             ];
         }
-        
+
         return $providers;
     }
-    
+
     /**
      * Set the current provider (for testing or runtime switching)
      * @param CommunicationProviderInterface $provider
