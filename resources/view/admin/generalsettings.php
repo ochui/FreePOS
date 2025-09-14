@@ -235,7 +235,7 @@
                                         <div class="form-group">
                                             <div class="col-sm-5"><label>Business Logo:</label></div>
                                             <div class="col-sm-6">
-                                                <input type="text" id="bizlogo" /><br/>
+                                                <input type="text" id="bizlogo" hidden /><br/>
                                                 <img id="bizlogoprev" width="128" height="64" src="" />
                                                 <input type="file" id="bizlogofile" name="file" />
                                             </div>
@@ -592,6 +592,7 @@
         data['altlabels'] = altlabels;
         data['gcontact'] = $("#gcontact").is(":checked")?1:0;
         data['email_tls'] = $("#email_tls").is(":checked");
+        delete data['bizlogofile'];
         var result = POS.sendJsonData("settings/general/set", JSON.stringify(data));
         if (result !== false){
             POS.setConfigSet('general', result);

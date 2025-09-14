@@ -353,7 +353,7 @@ class AdminItems
             $result['data'] = $this->getCategoryRecord($qresult);
             // broadcast update
             $socket = new SocketIO();
-            $socket->sendConfigUpdate('item_categories', $result['data']);
+            $socket->sendConfigUpdate($result['data'], 'item_categories');
             // log data
             Logger::write("Category added with id:" . $this->data->id, "CATEGORY", json_encode($this->data));
         }
@@ -380,7 +380,7 @@ class AdminItems
             $result['data'] = $this->getCategoryRecord($this->data->id);
             // broadcast update
             $socket = new SocketIO();
-            $socket->sendConfigUpdate('item_categories', $result['data']);
+            $socket->sendConfigUpdate($result['data'], 'item_categories');
             // log data
             Logger::write("Category updated with id:" . $this->data->id, "CATEGORY", json_encode($this->data));
         }
@@ -429,7 +429,7 @@ class AdminItems
             $result['data'] = true;
             // broadcast update
             $socket = new SocketIO();
-            $socket->sendConfigUpdate('item_categories', $this->data->id);
+            $socket->sendConfigUpdate($this->data->id, 'item_categories');
             // log data
             Logger::write("Category(s) deleted with id:" . $this->data->id, "CATEGORY");
         }

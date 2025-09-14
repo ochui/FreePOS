@@ -61,6 +61,7 @@ class PusherProvider implements CommunicationProviderInterface
             $eventData = [
                 'a' => $data['a'] ?? 'update',
                 'data' => $data['data'] ?? $data,
+                'type' => $data['type'] ?? null,
                 'include' => $devices  // Device targeting like WebSocket server
             ];
             

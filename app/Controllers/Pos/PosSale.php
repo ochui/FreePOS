@@ -642,7 +642,7 @@ class PosSale
             $this->jsonobj->isupdate = 1;
         }
 
-        $communication->sendSaleUpdate($dobject, ($delete ? $this->jsonobj->ref : $this->jsonobj));
+        $communication->sendSaleUpdate(($delete ? $this->jsonobj->ref : $this->jsonobj), $dobject);
 
         return true;
     }
