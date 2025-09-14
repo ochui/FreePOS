@@ -630,6 +630,8 @@ class PosSale
                 break;
         }
 
+        $devices[] = 0; // add admin dash
+
         // put devices into object, node.js array functions suck
         $dobject = new \stdClass();
         foreach ($devices as $value) {

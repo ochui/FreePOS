@@ -365,7 +365,7 @@ function startAdminSocket(){
                             saleData = JSON.parse(saleData);
                         }
                         console.log('Processing sale:', saleData);
-                        processIncomingSale(saleData);
+                        processIncomingSale(saleData.data ?? saleData);
                     } catch (e) {
                         console.error('Error processing sale data:', e, data.data);
                     }
