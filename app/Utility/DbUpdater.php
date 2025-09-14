@@ -150,8 +150,6 @@ class DbUpdater
             return "Already upgraded to version " . $version;
         }
 
-        echo ("Backing up database...\n");
-        AdminUtilities::backUpDatabase(false);
 
         $keys = array_keys(self::$versions);
         $cur_index = array_search($cur_version, $keys);

@@ -16,14 +16,7 @@ Take your business into the cloud with FreePOS!
 2. Access different applications:
    - Main POS: `/` or `/pos`
    - Admin: `/admin`
-   - Kitchen Display: `/kitchen`
-   - Customer Portal: `/customer`
 
-To find out more about FreePOS, head over to [wallacepos.com](https://wallacepos.com)
-
-If you find that FreePOS is the perfect companion for your business, please donate to support further development.
-
-[![Donate to FreePOS](https://www.paypalobjects.com/en_AU/i/btn/btn_donateCC_LG.gif)](#)
 
 ## Server Prerequisites
 
@@ -38,8 +31,8 @@ FreePOS requires:
     ```
         sudo apt-get update
         sudo apt-get install nodejs && apt-get install npm
-        cd %/your_install_dir%/api
-        sudo npm install socket.io
+        cd %/your_install_dir%/socket
+        sudo npm install
     ```
 
 ## Installation & Startup
@@ -50,4 +43,4 @@ FreePOS requires:
 
 3. Visit /installer in your browser & follow the installation wizard.
 
-4. Login to the admin dashboard at /admin, from the menu go to Settings -> Utilities and make sure the feed server has been started successfully.
+4. Login to the admin dashboard at /admin, from the menu go to Settings -> General Settings to configure your store details and other settings. For real-time features, you will need to setup the socket server or use a third party service like Pusher or Ably.
