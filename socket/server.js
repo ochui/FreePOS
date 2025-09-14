@@ -1,5 +1,5 @@
 /**
- * WPOS Websocket update relay, node.js server.
+ * Websocket update relay, node.js sever.
  * @type {*}
  */
 
@@ -60,7 +60,6 @@ io.on("connection", function (socket) {
   console.log("New connection from " + socket.request.socket.remoteAddress);
   // Request device registration
   // Disconnect if not authenticated
-  console.log(authed)
   if (!authed) {
     console.log("Socket authentication failed for " + socket.request.socket.remoteAddress);
     //   socket.emit("updates", { a: "error", data: { code: "auth", message: "Socket authentication failed!" } });
@@ -74,7 +73,8 @@ io.on("connection", function (socket) {
 
   // send to certain auth'd devices based on device id's provided.
   socket.on("send", function (data) {
-    let updateData = { data: data.include, a: data.data.a };
+    console.log("Send request received: " + JSON.stringify(data));
+    let updateData = { data: data.data, a: data.data.a };
 
     // if device.include is null, send to all auth'd
     const inclall = data.include == null;
