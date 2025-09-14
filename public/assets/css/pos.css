@@ -130,6 +130,36 @@ body {
     box-shadow: 0 -2px 8px rgba(59, 130, 246, 0.15);
 }
 
+/* Fix navbar tab visibility - ensure proper contrast for navbar that uses ui-tabs */
+.navbar.ui-tabs-nav {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;
+}
+
+.navbar.ui-tabs-nav.ui-widget-header {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;
+    border: none !important;
+}
+
+.navbar.ui-tabs-nav li a {
+    color: #f3f4f6 !important;
+    background: transparent !important;
+}
+
+.navbar.ui-tabs-nav li:not(.ui-tabs-active) a {
+    color: #f3f4f6 !important;
+    background: transparent !important;
+}
+
+.navbar.ui-tabs-nav li.ui-tabs-active a {
+    color: #1f2937 !important;
+    background: #ffffff !important;
+}
+
+.navbar.ui-tabs-nav li a:hover {
+    color: #60a5fa !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+
 .table thead th {
     background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     color: #374151;
