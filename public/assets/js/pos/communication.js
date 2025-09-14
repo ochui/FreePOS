@@ -271,25 +271,17 @@ function POSCommunicationManager() {
     this.handleIncomingMessage = function(data) {
         console.log('Processing incoming message:', data);
         
-        // Handle the data structure - it might be nested
-        var messageData = data;
-        if (data && data.data && data.data.data) {
-            messageData = data.data;
-        } else if (data && data.data) {
-            messageData = data.data;
-        }
-        
         // For Pusher/Ably, check if message is targeted to this device
-        if (self.providerType !== 'socketio' && messageData && messageData.include) {
+        if (self.providerType !== 'socketio' && data && data.include) {
             // Check if this device should receive the message
             var shouldReceive = false;
-            
-            if (messageData.include === null || messageData.include === undefined) {
+
+            if (data.include === null || data.include === undefined) {
                 // Broadcast to all devices
                 shouldReceive = true;
-            } else if (typeof messageData.include === 'object') {
+            } else if (typeof data.include === 'object') {
                 // Check if our device ID is in the include list
-                shouldReceive = messageData.include.hasOwnProperty(self.deviceId);
+                shouldReceive = data.include.hasOwnProperty(self.deviceId);
             }
             
             if (!shouldReceive) {
@@ -298,18 +290,7 @@ function POSCommunicationManager() {
             }
         }
         
-        // Extract the actual message content
-        var finalData;
-        if (messageData && messageData.data && messageData.data.a) {
-            finalData = messageData.data;
-        } else if (messageData && messageData.a) {
-            finalData = messageData;
-        } else {
-            finalData = data;
-        }
-        
-        console.log('Final processed data:', finalData);
-        self.onUpdates(finalData);
+        self.onUpdates(data);
     };
 
     /**
