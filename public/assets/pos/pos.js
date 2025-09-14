@@ -82,12 +82,7 @@ function POSAdmin() {
     clearInterval(timerId);
   };
   this.loadPageContent = function (query) {
-    var contenturl;
-    if (sec == "faq") {
-      contenturl = "https://wallacepos.com/content/faq.php";
-    } else {
-      contenturl = "api/admin/content/" + sec + "";
-    }
+    var contenturl = "api/admin/content/" + sec + "";
     $.get(
       contenturl,
       query,

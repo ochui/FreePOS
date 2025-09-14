@@ -6,33 +6,28 @@
     right: 0;
     width:100%;
     height:100%;
-    background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.9) 100%);
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.85) 0%, rgba(55, 65, 81, 0.9) 100%);
     z-index: 3000;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: center;
 }
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #e0f2fe;
-    --accent-color: #06b6d4;
-    --background-color: #ffffff;
-    --text-color: #1f2937;
-    --border-radius: 12px;
-}
+
 #loginbox {
     width: min(400px, 90vw);
     height: min(380px, 80vh);
     text-align: center;
     border-radius: var(--border-radius);
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 10px 25px var(--shadow-strong);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
 }
 #loginbox .widget-main {
     padding: 16px 20px 20px;
     min-height: 100%;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.02) 0%, rgba(14, 165, 233, 0.02) 100%);
 }
 #loginbox .input-icon {
     max-width: 320px;
@@ -47,15 +42,32 @@
     margin: 0 auto;
     min-height: 800px;
     overflow-x: auto !important;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    border: 1px solid var(--border-color);
 }
 
 .logout_btn {
     height: 45px;
     overflow: hidden;
+    background-color: var(--accent-color) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2) !important;
+    transition: all 0.2s ease !important;
+}
+
+.logout_btn:hover {
+    background-color: var(--accent-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(234, 88, 12, 0.3) !important;
+}
+
+.nav-list li.active>a:after {
+    border-right-color: var(--primary-color);
 }
 
 .fixedlabel {
@@ -90,14 +102,14 @@
 table.dataTable {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    border: 1px solid var(--border-color);
 }
 
 table.dataTable th {
     border-bottom-width: 1px;
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 
 table.dataTable tbody tr.selected, table.dataTable tbody th.selected, table.dataTable tbody td.selected {

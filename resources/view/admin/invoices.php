@@ -302,8 +302,6 @@
         // below not needed
         //$('select#ninvcustid').find('option').remove().end();
         for (var c in customers){
-            // do not use the class select2-offscreen to fix issue - https://github.com/micwallace/wallacepos/issues/41
-            //$("select#ninvcustid.select2-offscreen").append('<option data-value="'+c+'" value="'+c+'">'+customers[c].name+'</option>');
             $("select#ninvcustid").append('<option data-value="'+c+'" value="'+c+'">'+customers[c].name+'</option>');
         }
         var invoices = POS.transactions.getTransactions();

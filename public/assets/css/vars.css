@@ -1,0 +1,48 @@
+:root {
+    /* Core Brand Colors */
+    --primary-color: #1e40af;
+    --primary-hover: #1d4ed8;
+    --primary-active: #1e3a8a;
+
+    --secondary-color: #0ea5e9;
+    --secondary-light: #38bdf8;
+    --secondary-dark: #0284c7;
+
+    --accent-color: #ea580c;
+    --accent-hover: #dc2626;
+    --accent-light: #fb923c;
+
+    /* Status Colors */
+    --success-color: #059669;
+    --success-hover: #047857;
+    /* darker green for hover */
+
+    --warning-color: #d97706;
+    --warning-hover: #b45309;
+    /* darker amber */
+
+    --danger-color: #dc2626;
+    --danger-hover: #b91c1c;
+    /* darker red */
+
+    --info-color: #0ea5e9;
+    --info-hover: #0284c7;
+    /* darker cyan */
+
+    /* Backgrounds */
+    --background-color: #ffffff;
+    --background-dark: #1f2937;
+    --background-light: #f8fafc;
+
+    /* Text */
+    --text-color: #1f2937;
+    --text-light: #6b7280;
+
+    /* Borders & Shadows */
+    --border-color: #d1d5db;
+    --shadow-color: rgba(31, 41, 55, 0.15);
+    --shadow-strong: rgba(31, 41, 55, 0.25);
+
+    /* Misc */
+    --border-radius: 8px;
+}

@@ -70,7 +70,7 @@ class CustomerAccess
         if (($mres = $mailer->sendPredefinedMessage($this->data->email, 'register_email', ['name' => $this->data->name, 'link' => $linkhtml])) !== true) {
             $result['error'] = $mres;
         }
-        $mailer->sendPredefinedMessage("micwallace@gmx.com", 'register_notify', ['name' => "Michael", 'custname' => $this->data->name]);
+        $mailer->sendPredefinedMessage("customer@example.com", 'register_notify', ['name' => "Customer", 'custname' => $this->data->name]);
         return $result;
     }
 

@@ -1382,8 +1382,4 @@ $(function () {
         }
     });
 
-    // dev/demo quick login
-    if (document.location.host=="demo.wallacepos.com" || document.location.host=="alpha.wallacepos.com"){
-        $("#logindiv").append('<button class="btn btn-primary btn-sm" onclick="$(\'#username\').val(\'admin\');$(\'#password\').val(\'admin\'); POS.userLogin();">Demo Login</button>');
-    }
 });

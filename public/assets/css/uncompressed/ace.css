@@ -69,7 +69,7 @@ body.breadcrumbs-fixed {
   margin: 0 8px;
   font-size: 24px;
   font-weight: lighter;
-  color: #2679b5;
+  color: var(--primary-color);
 }
 .page-header h1 small {
   margin: 0 6px;
@@ -6954,7 +6954,7 @@ td .lbl:only-child {
   background-image: linear-gradient(to bottom, #ffffff 0%, #eeeeee 100%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffeeeeee', GradientType=0);
-  color: #669fc7;
+  color: var(--primary-color);
   border: 1px solid #CCC;
   border-bottom: 1px solid #DDD;
   padding-left: 12px;
@@ -12213,7 +12213,7 @@ img.editable-click:hover {
 .ui-jqdialog .ui-jqdialog-titlebar {
   background-color: #F1F1F1;
   font-size: 16px;
-  color: #669fc7;
+  color: var(--primary-color);
   padding: 0;
 }
 .ui-dialog .ui-dialog-title,
@@ -13000,7 +13000,7 @@ th[aria-selected=true] .ui-jqgrid-sortable {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffeeeeee', GradientType=0);
   border-image: none;
   border-bottom: 1px solid solid;
-  color: #669FC7;
+  color: var(--primary-color);
   min-height: 38px;
   position: relative;
 }

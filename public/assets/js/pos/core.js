@@ -1793,14 +1793,6 @@ $(function () {
         }
     });
 
-    // dev/demo quick login
-    if (document.location.host=="demo.wallacepos.com" || document.location.host=="alpha.wallacepos.com"){
-        var login = $("#logindiv");
-        login.append('<button class="btn btn-primary btn-sm" onclick="$(\'#username\').val(\'admin\');$(\'#password\').val(\'admin\'); POS.userLogin();">Demo Login</button>');
-        if (document.location.host=="alpha.wallacepos.com")
-            login.append('<button class="btn btn-primary btn-sm" onclick="$(\'#loginmodal\').hide();">Hide Login</button>');
-    }
-
     // window size
     if (POS.getLocalConfig().hasOwnProperty("window_size"))
         $("#wrapper").css("max-width", POS.getLocalConfig()["window_size"]);

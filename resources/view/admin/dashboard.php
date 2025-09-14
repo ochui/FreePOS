@@ -58,7 +58,7 @@
         <div id="voidtotal" class="stat stat-important">-</div>
     </div>
 
-    <div class="infobox infobox-blue2 infobox-takings">
+    <div class="infobox infobox-2 infobox-takings">
         <div class="infobox-icon">
             <i class="icon-dollar"></i>
         </div>
@@ -112,7 +112,7 @@
 
                 <ul id="grangevalues" class="dropdown-menu pull-right dropdown-125 dropdown-lighter dropdown-caret">
                     <li onclick="setGraph($(this));" class="active" >
-                        <a class="blue">
+                        <a class="">
                             <i class="icon-caret-right bigger-110">&nbsp;</i>
                             <span class="grangeval">This Week</span>
                         </a>
@@ -172,17 +172,17 @@
                         <thead class="thin-border-bottom">
                         <tr>
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Name
                             </th>
 
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Qty Sold
                             </th>
 
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Total
                             </th>
                         </tr>
@@ -219,7 +219,7 @@
 
                     <ul id="pietypevalues" class="dropdown-menu pull-right dropdown-125 dropdown-lighter dropdown-caret">
                         <li onclick="setPieType($(this));" class="active">
-                            <a class="blue">
+                            <a class="">
                                 <i class="icon-caret-right bigger-110">&nbsp;</i>
                                 <span class="pietypeval">Payments</span>
                             </a>
@@ -249,7 +249,7 @@
 
                     <ul id="pierangevalues" class="dropdown-menu pull-right dropdown-125 dropdown-lighter dropdown-caret">
                         <li onclick="setPie($(this));" class="active" >
-                            <a class="blue">
+                            <a class="">
                                 <i class="icon-caret-right bigger-110">&nbsp;</i>
                                 <span class="pierangeval">This Week</span>
                             </a>
@@ -304,7 +304,7 @@
 
                         <div class="grid3">
 															<span class="grey">
-																<i class="icon-dollar icon-2x blue"></i>
+																<i class="icon-dollar icon-2x "></i>
 																&nbsp; total
 															</span>
                             <h4 id="piebalance" class="bigger pull-right">-</h4>
@@ -359,7 +359,7 @@
         sort.sort(function(a, b){ return b[1] - a[1]; });
 
         for (i=0; (i<6 && i<sort.length); i++){
-            $("#popularitems").append('<tr><td><b>'+items[sort[i][0]].name+'</b></td><td><b class="blue">'+items[sort[i][0]].soldqty+'</b></td><td><b class="green">'+POS.util.currencyFormat(items[sort[i][0]].soldtotal)+'</b></td></tr>');
+            $("#popularitems").append('<tr><td><b>'+items[sort[i][0]].name+'</b></td><td><b class="">'+items[sort[i][0]].soldqty+'</b></td><td><b class="green">'+POS.util.currencyFormat(items[sort[i][0]].soldtotal)+'</b></td></tr>');
         }
         return true;
     }
@@ -483,11 +483,11 @@
         $("#pierange").text($(element).children().children('.pierangeval').text());
         $("#pierangevalues li").removeClass("active");
         $("#pierangevalues li i").addClass("invisible");
-        $("#pierangevalues li a").removeClass("blue");
+        $("#pierangevalues li a").removeClass("");
 
         $(element).addClass("active");
         $(element).children().children("i").removeClass("invisible");
-        $(element).children().addClass("blue");
+        $(element).children().addClass("");
 
         reloadPieChart();
     }
@@ -496,11 +496,11 @@
         $("#pietype").text($(element).children().children('.pietypeval').text());
         $("#pietypevalues li").removeClass("active");
         $("#pietypevalues li i").addClass("invisible");
-        $("#pietypevalues li a").removeClass("blue");
+        $("#pietypevalues li a").removeClass("");
 
         $(element).addClass("active");
         $(element).children().children("i").removeClass("invisible");
-        $(element).children().addClass("blue");
+        $(element).children().addClass("");
 
         reloadPieChart();
     }
@@ -575,11 +575,11 @@
         $("#grange").text($(element).children().children('.grangeval').text());
         $("#grangevalues li").removeClass("active");
         $("#grangevalues li i").addClass("invisible");
-        $("#grangevalues li a").removeClass("blue");
+        $("#grangevalues li a").removeClass("");
 
         $(element).addClass("active");
         $(element).children().children("i").removeClass("invisible");
-        $(element).children().addClass("blue");
+        $(element).children().addClass("");
 
         reloadGraph();
     }

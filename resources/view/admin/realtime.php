@@ -14,7 +14,7 @@
         <div class="widget-box transparent">
             <div class="widget-header widget-header-flat">
                 <h4 class="lighter">
-                    <i class="icon-shopping-cart blue"></i>
+                    <i class="icon-shopping-cart "></i>
                     Latest Transactions
                 </h4>
             </div>
@@ -25,27 +25,27 @@
                         <thead class="thin-border-bottom">
                         <tr>
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Time
                             </th>
 
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Status
                             </th>
 
                             <th>
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Device / Location
                             </th>
 
                             <th class="hidden-480 hidden-320">
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 # Items
                             </th>
 
                             <th class="hidden-320">
-                                <i class="icon-caret-right blue"></i>
+                                <i class="icon-caret-right "></i>
                                 Total
                             </th>
                         </tr>
@@ -87,8 +87,8 @@
                             <thead class="thin-border-bottom">
                             <tr>
                                 <th>
-                                    <i class="icon-caret-right blue"></i>
-                                    <h4 class="lighter blue" style="display: inline-block;">Message Devices</h4>
+                                    <i class="icon-caret-right"></i>
+                                    <h4 class="lighter" style="display: inline-block;">Message Devices</h4>
                                 </th>
                             </tr>
                             </thead>
@@ -114,8 +114,8 @@
                             <thead class="thin-border-bottom">
                             <tr>
                                 <th>
-                                    <i class="icon-caret-right blue"></i>
-                                    <h4 class="lighter blue" style="display: inline-block;">Online Devices</h4>
+                                    <i class="icon-caret-right "></i>
+                                    <h4 class="lighter " style="display: inline-block;">Online Devices</h4>
                                 </th>
                             </tr>
                             </thead>
@@ -185,7 +185,7 @@
                 <div id="rtvoidtotal" class="stat stat-important">-</div>
             </div>
 
-            <div class="infobox infobox-blue2 infobox-takings">
+            <div class="infobox infobox-2 infobox-takings">
                 <div class="infobox-icon">
                     <i class="icon-dollar"></i>
                 </div>

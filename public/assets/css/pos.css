@@ -1,13 +1,4 @@
 /* CSS Document */
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #e0f2fe;
-    --accent-color: #06b6d4;
-    --background-color: #ffffff;
-    --text-color: #1f2937;
-    --border-radius: 8px;
-}
-
 html,
 body {
     margin: 0;
@@ -15,8 +6,9 @@ body {
 }
 
 body {
-    background-color: #000000 !important;
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%) !important;
     min-height: 100vh !important;
+    color: var(--text-color) !important;
 }
 
 #wrapper {
@@ -25,10 +17,11 @@ body {
     max-width: 1152px;
     min-height: 100vh;
     padding: 0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     z-index: 1;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px var(--shadow-strong);
+    border: 1px solid var(--border-color);
 }
 
 .ui-tabs-panel {
@@ -161,19 +154,13 @@ body {
     margin-bottom: 8px !important;
     font-size: 13px !important;
     text-align: center;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     transition: all 0.3s ease;
 }
 
-.regbtn:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
+
 
 .small-button {
     font-size: 14px !important;

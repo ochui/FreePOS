@@ -1,21 +1,3 @@
-/**
- * This file is part of WebPrint
- *
- * @author Michael Wallace
- *
- * Copyright (C) 2015 Michael Wallace, WallaceIT
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl-2.1.html
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- */
 var WebPrint = function (init, opt) {
     var options = {
         relayHost: "127.0.0.1",
@@ -176,7 +158,6 @@ var WebPrint = function (init, opt) {
                 if (navigator.appVersion.indexOf("Mac")!=-1) installFile="WebPrint_macos_1_1_1.dmg";
                 if (navigator.appVersion.indexOf("X11")!=-1) installFile="WebPrint_unix_1_1_1.sh";
                 if (navigator.appVersion.indexOf("Linux")!=-1) installFile="WebPrint_unix_1_1_1.sh";
-                window.open("https://content.wallaceit.com.au/webprint/"+installFile, '_blank');
             });
         } else {
             var answer = confirm("Cannot communicate with the printing app.\nWould you like to open/install the printing app?");
@@ -190,7 +171,6 @@ var WebPrint = function (init, opt) {
                 if (navigator.appVersion.indexOf("Mac")!=-1) installFile="WebPrint_macos_1_1_1.dmg";
                 if (navigator.appVersion.indexOf("X11")!=-1) installFile="WebPrint_unix_1_1_1.sh";
                 if (navigator.appVersion.indexOf("Linux")!=-1) installFile="WebPrint_unix_1_1_1.sh";
-                window.open("https://content.wallaceit.com.au/webprint/"+installFile, '_blank');
             }
         }
     }
@@ -201,7 +181,6 @@ var WebPrint = function (init, opt) {
         } else {
             deployAndroidFirefox();
         }
-        //document.location.href = "intent://#Intent;scheme=webprint;package=au.com.wallaceit.webprint;S.browser_fallback_url=https%3A%2F%2Fwallaceit.com.au%2Fplaystore%2Fwebprint;end";
     }
 
     function isAndroidIntentSupported() {
@@ -214,15 +193,11 @@ var WebPrint = function (init, opt) {
         }
     }
 
-    function deployAndroidChrome(){
-        // this link needs to be clicked by the user
-        document.body.innerHTML += '<div id="intent_link" style="position: fixed; top:40%; width: 120px; background-color: white; left:50%; margin-left: -60px; border: solid 2px rgb(75, 75, 75); font-family: Helvetica SansSerif sans-serif; text-align: center; padding: 5px;">' +
-            '<a onclick="window.location=\'intent://#Intent;scheme=webprint;package=au.com.wallaceit.webprint;S.browser_fallback_url=https%3A%2F%2Fwallaceit.com.au%2Fplaystore%2Fwebprint;end\'; document.getElementById(\'intent_link\').remove();">Click To Open WebPrint</a></div>';
-    }
+   
 
     function deployAndroidFirefox() {
         var timeout = setTimeout(function() {
-            window.location = "https://wallaceit.com.au/playstore/webprint";
+            window.location = "";
         }, 1000);
         window.addEventListener("pagehide", function(evt) {
             clearTimeout(timeout);

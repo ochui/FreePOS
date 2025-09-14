@@ -1,0 +1,185 @@
+
+/* Button Color Updates Only */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+}
+
+.btn-success:hover {
+    background-color: var(--success-hover) !important;
+    border-color: var(--success-hover) !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.btn-warning:hover {
+    background-color: var(--warning-hover) !important;
+    border-color: var(--warning-hover) !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-hover) !important;
+    border-color: var(--danger-hover) !important;
+}
+
+.btn-info {
+    background-color: var(--info-color) !important;
+    border-color: var(--info-color) !important;
+}
+
+.btn-info:hover {
+    background-color: var(--info-hover) !important;
+    border-color: var(--info-hover) !important;
+}
+
+/* Navbar Color Updates Only */
+.navbar-default {
+    background-color: var(--primary-color) !important;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-nav>li>a {
+    color: #ffffff !important;
+}
+
+/* Sidebar Color Updates Only */
+.sidebar {
+    background-color: var(--text-color) !important;
+}
+
+.sidebar .nav-list>li>a {
+    color: var(--primary-color) !important;
+}
+
+.sidebar .nav-list>li.active>a {
+    background-color: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+/* Link Color Updates Only */
+a {
+    color: var(--primary-color) !important;
+}
+
+a:hover {
+    color: var(--primary-hover) !important;
+}
+
+/* Text Color Updates Only */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+/* Table Header Color Updates Only */
+.table th {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+/* Alert Color Updates Only */
+.alert-success {
+    background-color: rgba(5, 150, 105, 0.1) !important;
+    border-color: var(--success-color) !important;
+    color: var(--success-hover) !important;
+}
+
+.alert-warning {
+    background-color: rgba(217, 119, 6, 0.1) !important;
+    border-color: var(--warning-color) !important;
+    color: var(--warning-hover) !important;
+}
+
+.alert-danger {
+    background-color: rgba(220, 38, 38, 0.1) !important;
+    border-color: var(--danger-color) !important;
+    color: var(--danger-hover) !important;
+}
+
+.alert-info {
+    background-color: rgba(14, 165, 233, 0.1) !important;
+    border-color: var(--info-color) !important;
+    color: var(--info-hover) !important;
+}
+
+/* Badge Color Updates Only */
+.badge-primary,
+.label-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.badge-success,
+.label-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge-warning,
+.label-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.badge-danger,
+.label-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.badge-info,
+.label-info {
+    background-color: var(--info-color) !important;
+}
+
+/* Progress Bar Color Updates Only */
+.progress-bar {
+    background-color: var(--primary-color) !important;
+}
+
+.progress-bar-success {
+    background-color: var(--success-color) !important;
+}
+
+.progress-bar-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.progress-bar-danger {
+    background-color: var(--danger-color) !important;
+}
+
+/* Form Focus Color Updates Only */
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2) !important;
+}
