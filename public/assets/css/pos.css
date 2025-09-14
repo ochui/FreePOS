@@ -246,6 +246,12 @@ input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus,
     border-top: 1px solid #4b5563;
 }
 
+/* Order header styling for modern look */
+.order_header {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff !important;
+}
+
 /* Status indicator improvements */
 #status-indicator {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);

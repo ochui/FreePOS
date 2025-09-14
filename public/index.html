@@ -85,9 +85,9 @@
     <li><a href="#tabs-4">Settings</a></li>
     <button onClick="POS.logout();" style="float:right; height: 45px; padding: 6px 8px;" class="btn logout_btn"><i class="glyphicon glyphicon-log-out"></i>Logout</button>
     <div style="float:right; vertical-align: middle; margin-top: 10px; text-align: right;">
-        <button title="Open Administration Dashboard" onClick="window.open('/admin');" style="margin-right: 4px; margin-left: 4px;" class="btn btn-xs btn-primary"><i class="icon icon-cog">&nbsp;Admin</i></button>
-        <button title="Lock terminal or switch user" id="switch_user_btn" onClick="POS.lockSession();" style="margin-right: 4px; margin-left: 4px;" class="btn btn-xs btn-primary"><i class="icon icon-lock"></i>&nbsp;Lock</button>
-        <button title="Expand window" id="window_width_toggle" onClick="expandWindow();" style="margin-right: 4px; margin-left: 6px;" class="btn btn-xs btn-primary"><i class="icon icon-expand"></i></button>
+        <button title="Open Administration Dashboard" onClick="window.open('/admin');" style="margin-right: 4px; margin-left: 4px;" class="btn btn-sm btn-primary"><i class="icon icon-cog">&nbsp;Admin</i></button>
+        <button title="Lock terminal or switch user" id="switch_user_btn" onClick="POS.lockSession();" style="margin-right: 4px; margin-left: 4px;" class="btn btn-sm btn-primary"><i class="icon icon-lock"></i>&nbsp;Lock</button>
+        <button title="Expand window" id="window_width_toggle" onClick="expandWindow();" style="margin-right: 4px; margin-left: 6px;" class="btn btn-sm btn-primary"><i class="icon icon-expand"></i></button>
     </div>
 </ul>
 <div id="tabs-1">
@@ -126,7 +126,7 @@
                     </thead>
                     <tbody id="itemtable" style="overflow:auto;">
                         <tr class="order_row">
-                            <td style="background-color:#438EB9; color:#FFF;" colspan="7"><h4 style="text-align: center; margin: 0;">New Order</h4></td>
+                            <td class="order_header" colspan="7"><h4 style="text-align: center; margin: 0;">New Order</h4></td>
                         </tr>
                     </tbody>
                 </table>
