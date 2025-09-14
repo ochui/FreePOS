@@ -27,11 +27,6 @@ class Config
             self::$config['app'] = require config_path('app.php');
         }
 
-        // Load database config if it exists
-        if (file_exists(config_path('database.php'))) {
-            self::$config['database'] = require config_path('database.php');
-        }
-
         // Load from global config if available (for compatibility)
         if (isset($GLOBALS['app_config'])) {
             self::$config = array_merge(self::$config, ['app' => $GLOBALS['app_config']]);

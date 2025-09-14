@@ -76,9 +76,7 @@ class DbConfig
                 throw new \Exception('Failed to connect to database');
             }
 
-            $this->_db->query("SET time_zone = '+00:00'"); //Set timezone to GMT, previous statement didn't work (Africa/Lagos), and GMT preserved daylight savings.
-            //var_dump($this->_db->query("SELECT now()")->fetchAll());exit;
-            //var_dump($this->_db->query("SELECT @@session.time_zone, @@global.time_zone")->fetchAll(PDO::FETCH_ASSOC));exit;
+            $this->_db->query("SET time_zone = '+00:00'");
             $this->_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
             error_log('Failed to connect to database: ' . $e->getMessage());
@@ -92,31 +90,25 @@ class DbConfig
      */
     static function getConf()
     {
-        // Try to load .env file for local development
-        $envPath = base_path();
-        if (!file_exists($envPath . '/.env')) {
-            throw new \Exception('Missing .env file');
+
+        $dbcfg = config('app.database', []);
+        if (is_array($dbcfg)) {
+            self::$_hostname = $dbcfg['host'] ?? self::$_hostname;
+            self::$_port = $dbcfg['port'] ?? self::$_port;
+            self::$_database = $dbcfg['name'] ?? ($dbcfg['db'] ?? self::$_database);
+            self::$_username = $dbcfg['user'] ?? self::$_username;
+            self::$_password = $dbcfg['password'] ?? ($dbcfg['pass'] ?? self::$_password);
         }
 
-        $dotenv = Dotenv::createImmutable($envPath);
-        $dotenv->load();
 
-        if (($url = getenv("DATABASE_URL")) !== false) {
-            $url = parse_url($url);
-            self::$_username = $url['user'];
-            self::$_password = $url['pass'];
-            self::$_database = substr($url["path"], 1);
-            self::$_hostname = $url['host'];
-            self::$_port = $url["port"];
-        } else if (!empty($_ENV['DATABASE_HOST']) && !empty($_ENV['DATABASE_NAME'])) {
-            self::$_username = $_ENV['DATABASE_USER'] ?? '';
-            self::$_password = $_ENV['DATABASE_PASSWORD'] ?? '';
-            self::$_database = $_ENV['DATABASE_NAME'];
-            self::$_hostname = $_ENV['DATABASE_HOST'];
-            self::$_port = $_ENV['DATABASE_PORT'] ?? '3306';
-        }
+        $conf = [
+            "host" => self::$_hostname,
+            "port" => self::$_port,
+            "user" => self::$_username,
+            "pass" => self::$_password,
+            "db" => self::$_database,
+        ];
 
-        $conf = ["host" => self::$_hostname, "port" => self::$_port, "user" => self::$_username, "pass" => self::$_password, "db" => self::$_database,];
         return $conf;
     }
 

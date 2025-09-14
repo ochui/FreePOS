@@ -70,6 +70,17 @@ if (!function_exists('config')) {
     }
 }
 
+if (!function_exists('env')) {
+    function env($key, $default = null)
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key];
+        if ($value === false) {
+            return $default;
+        }
+        return $value;
+    }
+}
+
 if (!function_exists('loadJsonFile')) {
     function loadJsonFile($path)
     {

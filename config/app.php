@@ -11,7 +11,7 @@ return [
     |
     */
 
-    'timezone' => getenv('TIMEZONE') ?: 'UTC',
+    'timezone' => env('TIMEZONE') ?: 'UTC',
     
     /*
     |--------------------------------------------------------------------------
@@ -24,11 +24,11 @@ return [
     */
 
     'database' => [
-        'host' => getenv('DATABASE_HOST') ?: 'localhost',
-        'port' => getenv('DATABASE_PORT') ?: '3306',
-        'name' => getenv('DATABASE_NAME') ?: '',
-        'user' => getenv('DATABASE_USER') ?: '',
-        'password' => getenv('DATABASE_PASSWORD') ?: '',
+        'host' => env('DATABASE_HOST') ?: 'localhost',
+        'port' => env('DATABASE_PORT') ?: '3306',
+        'name' => env('DATABASE_NAME') ?: '',
+        'user' => env('DATABASE_USER') ?: '',
+        'password' => env('DATABASE_PASSWORD') ?: '',
     ],
 
     /*
