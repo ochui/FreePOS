@@ -57,7 +57,7 @@
 
 .navbar-default .navbar-brand,
 .navbar-default .navbar-nav>li>a {
-    color: #ffffff !important;
+    color: var(--background-color) !important;
 }
 
 /* Sidebar Color Updates Only */
@@ -71,7 +71,7 @@
 
 .sidebar .nav-list>li.active>a {
     background-color: var(--accent-color) !important;
-    color: #ffffff !important;
+    color: var(--background-color) !important;
 }
 
 /* Link Color Updates Only */
@@ -107,7 +107,18 @@ a:hover {
 /* Table Header Color Updates Only */
 .table th {
     background-color: var(--primary-color) !important;
-    color: #ffffff !important;
+    color: var(--background-color) !important;
+}
+
+.table-header {
+    background-color: var(--primary-color) !important;
+    color: var(--background-color) !important;
+}
+
+.dataTable th.sorting_desc, .dataTable th.sorting_asc {
+    background-color: var(--primary-hover) !important;
+    background-image: none !important;
+    color: var(--background-color) !important;
 }
 
 /* Alert Color Updates Only */
