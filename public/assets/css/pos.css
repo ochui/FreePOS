@@ -1,4 +1,16 @@
 /* CSS Document */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
 html,
 body {
     margin: 0;
@@ -8,26 +20,34 @@ body {
 body {
     background: linear-gradient(135deg, var(--background-dark) 0%, #374151 100%) !important;
     min-height: 100vh !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
     color: var(--text-color) !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
 }
 
 #wrapper {
     margin: auto;
-    height: auto;
+    height: 100vh;
+    max-height: 100vh;
     max-width: 1152px;
     min-height: 100vh;
     padding: 0;
     background: linear-gradient(135deg, var(--background-color) 0%, var(--background-light) 100%);
     z-index: 1;
-    border-radius: 12px;
     box-shadow: 0 8px 25px var(--shadow-strong);
-    border: 1px solid var(--border-color);
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .ui-tabs-panel {
     position: relative;
-    min-height: calc(100vh - 45px);
+    height: calc(100vh - 45px);
+    max-height: calc(100vh - 45px);
     padding: 12px 10px 40px 10px !important;
+    overflow: auto;
+    box-sizing: border-box;
 }
 
 .ui-dialog.setup-dialog {
@@ -88,15 +108,15 @@ body {
 
 #reportcontain {
     width: 100%;
-    min-width: 480px;
+    max-width: 100%;
     min-height: 600px;
     overflow-x: auto !important;
+    box-sizing: border-box;
 }
 
 #tabs-3 {
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-width: 100vw;
+    overflow: hidden;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -245,8 +265,10 @@ h1, h2, h3, h4, h5, h6 {
 #iboxitems {
     margin: 5px;
     margin-left: 15px;
-    width: 440px;
+    width: 100%;
+    max-width: 440px;
     overflow-x: hidden !important;
+    box-sizing: border-box;
 }
 
 .iboxitem {
@@ -373,7 +395,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Landscape Size to Tablet Portrait (devices and browsers) */
 @media only screen and (min-width: 480px) and (max-width: 767px) {
     #reportcontain {
-        width: 480px;
+        max-width: 480px;
     }
 
     .hlabel {
@@ -390,7 +412,7 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     #iboxitems {
-        width: 290px;
+        max-width: 290px;
     }
 
     #transactioninfo {
@@ -401,7 +423,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers) */
 @media only screen and (max-width: 479px) {
     #reportcontain {
-        width: 480px;
+        max-width: 100%;
+        min-width: auto;
     }
 
     .hlabel {
@@ -424,7 +447,7 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     #iboxitems {
-        width: 150px;
+        max-width: 150px;
     }
 
     .ui-dialog {
