@@ -1,4 +1,3 @@
-
 /* Button Color Updates Only */
 .btn-primary {
     background-color: var(--primary-color) !important;
@@ -115,7 +114,8 @@ a:hover {
     color: var(--background-color) !important;
 }
 
-.dataTable th.sorting_desc, .dataTable th.sorting_asc {
+.dataTable th.sorting_desc,
+.dataTable th.sorting_asc {
     background-color: var(--primary-hover) !important;
     background-image: none !important;
     color: var(--background-color) !important;
@@ -148,27 +148,27 @@ a:hover {
 
 /* Badge Color Updates Only */
 .badge-primary,
-.label-primary {
+.label-primary .arrowed::before {
     background-color: var(--primary-color) !important;
 }
 
 .badge-success,
-.label-success {
+.label-success .arrowed::before {
     background-color: var(--success-color) !important;
 }
 
 .badge-warning,
-.label-warning {
+.label-warning .arrowed::before {
     background-color: var(--warning-color) !important;
 }
 
 .badge-danger,
-.label-danger {
+.label-danger .arrowed::before {
     background-color: var(--danger-color) !important;
 }
 
 .badge-info,
-.label-info {
+.label-info .arrowed::before {
     background-color: var(--info-color) !important;
 }
 
@@ -193,4 +193,8 @@ a:hover {
 .form-control:focus {
     border-color: var(--primary-color) !important;
     box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2) !important;
+}
+
+.widget-box.transparent>.widget-header {
+    color: var(--primary-color) !important;
 }
