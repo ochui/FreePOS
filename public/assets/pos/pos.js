@@ -617,10 +617,22 @@ function POSAdmin() {
     POS.devices = configtable.devices;
     POS.locations = configtable.locations;
     POS.users = configtable.users;
+    // Populate admin UI elements
+    populateAdminInfo();
+  }
+
+  function populateAdminInfo() {
+    if (configtable && configtable.general && configtable.general.bizname) {
+      $("#biz_name").text(configtable.general.bizname);
+    }
   }
 
   this.refreshConfigTable = function () {
     fetchConfigTable();
+  };
+
+  this.refreshAdminInfo = function () {
+    populateAdminInfo();
   };
 
   this.getConfigTable = function () {
@@ -632,6 +644,10 @@ function POSAdmin() {
 
   this.setConfigSet = function (key, data) {
     configtable[key] = data;
+    // Update admin UI if general config (which contains bizname) is updated
+    if (key === 'general') {
+      populateAdminInfo();
+    }
   };
 
   this.getTaxTable = function () {

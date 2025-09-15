@@ -67,12 +67,9 @@
 
 			<div class="navbar-container" id="navbar-container">
 				<div class="pull-left">
-					<a class="navbar-brand" style="padding: 5px;">
-						<small>
-							<img style="width:35px;" src="../assets/images/icon.png"/>
-							POSAdministration
-						</small>
-					</a><!-- /.brand -->
+					<div class="navbar-brand">
+                       Admin - <span id="biz_name">Loading...</span>
+					</div><!-- /.brand -->
 				</div><!-- /.navbar-header -->
                 <div style="position: absolute; right: 0; overflow:hidden;">
                     <button class="btn logout_btn" onclick="POS.logout();">Logout</button>
@@ -285,8 +282,9 @@
         <div id="loginmodal" class="login-layout">
             <div id="loginbox" class="login-box widget-box visible no-border">
                 <div class="widget-main">
-                    <h2 class="header blue lighter bigger">
-                        <img style="height: 40px; margin-top: -5px;" src="../assets/images/apple-touch-icon-72x72.png">&nbsp;Pos Admin
+                    <h2 class="page-header bigger">
+                        <!-- User icon -->
+                        <i class="icon-user"></i> Administration
                     </h2>
                     <div class="space-2"></div>
                     <div id="login-banner" class="alert alert-block alert-success" style="display:none;">

@@ -9,12 +9,26 @@
     border-color: var(--primary-hover) !important;
 }
 
+.btn-primary:focus {
+    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2) !important;
+    outline: none !important;
+    background-color: var(--primary-active) !important;
+    border-color: var(--primary-active) !important;
+}
+
 .btn-success {
     background-color: var(--success-color) !important;
     border-color: var(--success-color) !important;
 }
 
 .btn-success:hover {
+    background-color: var(--success-hover) !important;
+    border-color: var(--success-hover) !important;
+}
+
+.btn-success:focus {
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2) !important;
+    outline: none !important;
     background-color: var(--success-hover) !important;
     border-color: var(--success-hover) !important;
 }
@@ -27,6 +41,10 @@
 .btn-warning:hover {
     background-color: var(--warning-hover) !important;
     border-color: var(--warning-hover) !important;
+}
+
+.btn-warning:focus {
+    
 }
 
 .btn-danger {
