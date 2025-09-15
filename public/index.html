@@ -193,11 +193,15 @@
                 <div id="regkey-container" class="pull-right">
                         <div id="regkey-inner">
                         <div id="registerkeydiv">
-                            <button class="regbtn btn btn-success" onClick="POS.sales.showPaymentDialog();">Process
-                            </button>
-                            <button class="regbtn btn btn-danger" onClick="POS.sales.userAbortSale();">Abort</button>
-                            <button class="regbtn btn" onclick="POS.print.openCashDraw();">Till</button>
-                            <button class="regbtn btn" onclick="POS.trans.recallLastTransaction();">Recall</button>
+                            <div style="margin-bottom: 8px;">
+                                <button class="regbtn btn btn-success" onClick="POS.sales.showPaymentDialog();">Process
+                                </button>
+                                <button class="regbtn btn btn-danger" onClick="POS.sales.userAbortSale();">Abort</button>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <button class="regbtn btn" onclick="POS.print.openCashDraw();">Till</button>
+                                <button class="regbtn btn" onclick="POS.trans.recallLastTransaction();">Recall</button>
+                            </div>
                         </div>
                         <div>
                             <button onclick="POS.trans.showTransactionView();" class="regbtn btn btn-primary"
