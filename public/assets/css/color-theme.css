@@ -266,3 +266,12 @@ a:hover {
     border-radius: 10px !important;
     background-color: lavender !important;
 }
+
+.dropdown-menu {
+    border-radius: 4px !important;
+}
+
+.ui-dialog, .ui-jqdialog {
+    border-radius: 10px !important;
+    border: 0 !important;
+}
