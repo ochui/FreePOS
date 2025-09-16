@@ -148,73 +148,79 @@
             </h4>
         </div>
         <div class="widget-body" style="padding-top: 10px; text-align: center;">
-            <div class="infobox infobox-green infobox-sales">
-                <div class="infobox-icon">
-                    <i class="icon-shopping-cart"></i>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-green infobox-sales" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-shopping-cart"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rtsalenum" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Sales</div>
+                        </div>
+                        <div id="rtsaletotal" class="stat stat-success" style="flex-shrink: 0; margin-left: 10px;">-</div>
+                    </div>
                 </div>
-
-                <div class="infobox-data">
-                    <span id="rtsalenum" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Sales</div>
-                </div>
-                <div id="rtsaletotal" class="stat stat-success">-</div>
-            </div>
-
-            <div class="infobox infobox-orange infobox-refunds">
-                <div class="infobox-icon">
-                    <i class="icon-backward"></i>
-                </div>
-
-                <div class="infobox-data">
-                    <span id="rtrefundnum" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Refunds</div>
-                </div>
-
-                <div id="rtrefundtotal" class="stat stat-important">-</div>
-            </div><br/>
-
-            <div class="infobox infobox-red infobox-voids">
-                <div class="infobox-icon">
-                    <i class="icon-ban-circle"></i>
-                </div>
-
-                <div class="infobox-data">
-                    <span id="rtvoidnum" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Voids</div>
-                </div>
-                <div id="rtvoidtotal" class="stat stat-important">-</div>
-            </div>
-
-            <div class="infobox infobox-2 infobox-takings">
-                <div class="infobox-icon">
-                    <i class="icon-dollar"></i>
-                </div>
-
-                <div class="infobox-data">
-                    <span id="rttakings" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Revenue</div>
-                </div>
-            </div><br/>
-
-            <div class="infobox infobox-orange infobox-cost">
-                <div class="infobox-icon">
-                    <i class="icon-dollar"></i>
-                </div>
-
-                <div class="infobox-data">
-                    <span id="rtcost" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Cost</div>
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-orange infobox-refunds" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-backward"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rtrefundnum" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Refunds</div>
+                        </div>
+                        <div id="rtrefundtotal" class="stat stat-important" style="flex-shrink: 0; margin-left: 10px;">-</div>
+                    </div>
                 </div>
             </div>
-
-            <div class="infobox infobox-green infobox-profit">
-                <div class="infobox-icon">
-                    <i class="icon-dollar"></i>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-red infobox-voids" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-ban-circle"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rtvoidnum" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Voids</div>
+                        </div>
+                        <div id="rtvoidtotal" class="stat stat-important" style="flex-shrink: 0; margin-left: 10px;">-</div>
+                    </div>
                 </div>
-
-                <div class="infobox-data">
-                    <span id="rtprofit" class="infobox-data-number">-</span>
-                    <div class="infobox-content">Profit</div>
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-2 infobox-takings" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-dollar"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rttakings" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Revenue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-orange infobox-cost" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-dollar"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rtcost" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Cost</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6" style="margin-bottom: 10px;">
+                    <div class="infobox infobox-green infobox-profit" style="width: 100%; display: flex; align-items: center; min-height: 60px;">
+                        <div class="infobox-icon" style="flex-shrink: 0; margin-right: 15px;">
+                            <i class="icon-dollar"></i>
+                        </div>
+                        <div class="infobox-data" style="flex: 1; min-width: 0;">
+                            <span id="rtprofit" class="infobox-data-number">-</span>
+                            <div class="infobox-content">Profit</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

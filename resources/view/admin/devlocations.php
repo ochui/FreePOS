@@ -105,15 +105,14 @@
                     <td style="text-align: right;"><label>Device Type:&nbsp;</label></td>
                     <td><select id="devtype" onchange="showDeviceOptions($(this).val());">
                             <option class="reg_device" value="general_register">General Cash Register</option>
-                            <option class="reg_device" value="order_register">Order Register (alpha version)</option>
-                            <option class="kitchen_device" value="kitchen_terminal">Kitchen/Bar Terminal (alpha version)</option>
+                            <option class="reg_device" value="order_register">Order Register</option>
                         </select></td>
                 </tr>
                 <tr class="order_options">
                     <td style="text-align: right;"><label>Kitchen Delivery:&nbsp;</label></td>
                     <td><select id="devordertype" onchange="showKitchenOptions($(this).val());">
-                            <option value="terminal">Kitchen/Bar Terminal</option>
-                            <option value="printer">Kitchen/Bar Printer</option>
+                            <option value="terminal">Terminal</option>
+                            <option value="printer">Printer</option>
                         </select></td>
                 </tr>
                 <tr class="order_options">
@@ -121,7 +120,7 @@
                     <td><input id="devorderdisplay" type="checkbox" /></td>
                 </tr>
                 <tr class="order_term_options">
-                    <td style="text-align: right;"><label>Kitchen Terminal:&nbsp;</label></td>
+                    <td style="text-align: right;"><label>Terminal:&nbsp;</label></td>
                     <td><select id="devkitchenid" class="kitchenselect">
                         </select></td>
                 </tr>
@@ -425,9 +424,7 @@
             otypefield.val(dev.ordertype);
             odisplyfield.prop('checked', (dev.orderdisplay)?true:false);
             kitchenidfield.val(dev.kitchenid);
-            var iskitchen = dev.type=="kitchen_terminal";
-            $(".reg_device").prop('disabled', iskitchen);
-            $(".kitchen_device").prop('disabled', !iskitchen);
+           
         } else {
             idfield.val(0);
             namefield.val('');

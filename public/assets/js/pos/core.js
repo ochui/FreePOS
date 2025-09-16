@@ -736,7 +736,7 @@ function POS() {
         if (canDoOffline()==true) {
             // set js indicator: important
             online = false;
-            setStatusBar(3, "POS.is Offline", "The POS is offine and will store sale data locally until a connection becomes available.", 0);
+            setStatusBar(3, "POS is Offline", "The POS is offine and will store sale data locally until a connection becomes available.", 0);
             // start online check routine
             checktimer = setInterval(doOnlineCheck, 60000);
             if (POS.sales.getOfflineSalesNum()>0)

@@ -1,3 +1,28 @@
+input,
+button,
+select,
+textarea,
+.btn {
+    border-radius: 3px !important;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"] {
+    border-radius: 3px !important;
+}
+
 /* Button Color Updates Only */
 .btn-primary {
     background-color: var(--primary-color) !important;
@@ -43,9 +68,7 @@
     border-color: var(--warning-hover) !important;
 }
 
-.btn-warning:focus {
-    
-}
+.btn-warning:focus {}
 
 .btn-danger {
     background-color: var(--danger-color) !important;
@@ -213,6 +236,33 @@ a:hover {
     box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2) !important;
 }
 
+.widget-box {
+    border-radius: 10px !important;
+    background-color: ghostwhite !important;
+    border-bottom: 0 !important;
+}
+
+.widget-box.transparent {
+    border-radius: 10px !important;
+    background-color: ghostwhite !important;
+}
+
 .widget-box.transparent>.widget-header {
     color: var(--primary-color) !important;
+}
+
+.widget-header {
+    background-color: transparent !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+}
+
+.widget-body {
+    background-color: ghostwhite !important;
+    border: 0 !important;
+}
+
+.infobox {
+    border-radius: 10px !important;
+    background-color: lavender !important;
 }

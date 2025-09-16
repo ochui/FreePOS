@@ -1070,7 +1070,7 @@ function POSSales() {
       });
     } else {
       // update status
-      POS.setStatusBar(3, "POS.is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
+      POS.setStatusBar(3, "POS is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
     }
     // close the payment dialog and clear form
     clearSalesForm();
@@ -1238,7 +1238,7 @@ function POSSales() {
       });
     } else {
       // update status
-      POS.setStatusBar(3, "POS.is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
+      POS.setStatusBar(3, "POS is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
     }
     var recemailed = $("#emailreceipt").is(":checked");
     // close the payment dialog and clear form (clears current ref aswell)
@@ -1287,7 +1287,7 @@ function POSSales() {
         // do not store record if offline mode is not supported.
         // update status
         var statusmsg = "The POS is offine and will store sale data locally until a connection becomes available.";
-        POS.setStatusBar(3, "POS.is offline (" + POS.sales.getOfflineSalesNum() + " offline records)", statusmsg, 0);
+        POS.setStatusBar(3, "POS is offline (" + POS.sales.getOfflineSalesNum() + " offline records)", statusmsg, 0);
       } else {
         // remove from offline temp
         removeOfflineSale(callbackref);
@@ -1672,7 +1672,7 @@ function POSSales() {
     } else {
       addUpdatedOfflineRecord(true, refundobj, "sales/void"); // update records
       // update status
-      POS.setStatusBar(3, "POS.is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
+      POS.setStatusBar(3, "POS is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
     }
     if (isrefund) {
       // open the draw if a cash payment
@@ -1704,7 +1704,7 @@ function POSSales() {
         // do not store record if offline mode is not supported.
         addUpdatedOfflineRecord(true, refundobject, "sales/void"); // update records
         // update status
-        POS.setStatusBar(3, "POS.is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
+        POS.setStatusBar(3, "POS is offline (" + POS.sales.getOfflineSalesNum() + " offline records)");
       }
     }
   };
@@ -1910,7 +1910,7 @@ function POSSales() {
         // damn so close, go back into offline mode
         if (POS.switchToOffline()) {
           // update status
-          POS.setStatusBar(3, "POS.is offline (" + count + " offline records)");
+          POS.setStatusBar(3, "POS is offline (" + count + " offline records)");
           return false;
         }
       } else {
