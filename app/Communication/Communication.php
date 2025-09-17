@@ -42,12 +42,6 @@ class Communication
         if ($this->provider instanceof \App\Communication\Providers\SocketIOProvider) {
             $key = hash('sha256', AdminUtilities::getToken(256));
             AdminSettings::setConfigFileValue('feedserver_key', $key);
-            
-            $socket = new SocketControl();
-            if ($socket->isServerRunning()) {
-                // Note: This would need to be updated for the new provider to handle hashkey updates
-                // For now, keeping Socket.IO specific functionality
-            }
         }
         return true;
     }

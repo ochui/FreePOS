@@ -20,7 +20,6 @@ use App\Controllers\Pos\PosSetup;
 use App\Controllers\Pos\PosData;
 use App\Controllers\Transaction\Transactions;
 use App\Controllers\Invoice\Templates;
-use App\Communication\SocketControl;
 use App\Communication\Communication;
 use App\Communication\DeviceRegistry;
 use App\Integration\GoogleIntegration;

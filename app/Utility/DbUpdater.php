@@ -15,7 +15,6 @@ use App\Controllers\Invoice\Templates;
 use App\Communication\SocketIO;
 use App\Database\AuthModel;
 use App\Database\SaleItemsModel;
-use App\Communication\SocketControl;
 use App\Auth;
 
 
@@ -65,10 +64,6 @@ class DbUpdater
                 }
 
                 AdminSettings::putValue('general', 'version', $this->getLatestVersionName());
-
-                $socket = new SocketControl();
-                if (!$socket->isServerRunning())
-                    $socket->startSocketServer();
             }
         } catch (\Exception $e) {
             return $e->getMessage();
