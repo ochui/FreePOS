@@ -43,7 +43,7 @@ class GoogleIntegration
         $client->setClientSecret(self::$client_secret);
         $client->setRedirectUri(self::$redirect_uri);
         // exchange auth code for access & refresh tokens
-        $client->authenticate($code);
+        $client->fetchAccessTokenWithAuthCode($code);
         $tokens = $client->getAccessToken();
         // return tokens
         return $tokens;
