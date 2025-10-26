@@ -62,6 +62,11 @@
                     Options
                 </a>
             </li>
+            <li class="">
+                <a href="#itemvariants" data-toggle="tab">
+                    Variants
+                </a>
+            </li>
         </ul>
         <div class="tab-content" style="min-height: 320px;">
             <div class="tab-pane active in" id="itemdetails">
@@ -155,6 +160,107 @@
                         <button style="float: right; margin-right: 8px;" class="btn btn-primary btn-xs" onclick="addSelectItemModifier();">Add</button>
                     </div>
                 </form>
+            </div>
+            <div class="tab-pane" id="itemvariants" style="min-height: 400px; max-height: 600px; overflow-y: auto;">
+                <div class="tabbable tabs-left">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#variant-attributes" data-toggle="tab">
+                                Attributes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#variant-values" data-toggle="tab">
+                                Values
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#variant-list" data-toggle="tab">
+                                Variants
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#variant-stock" data-toggle="tab">
+                                Stock
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active in" id="variant-attributes">
+                            <h4>Product Attributes</h4>
+                            <button class="btn btn-primary btn-sm" onclick="openAddAttributeDialog();">Add Attribute</button>
+                            <table class="table table-striped table-bordered" id="attributes-table" style="margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Display Name</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="variant-values">
+                            <h4>Attribute Values</h4>
+                            <div class="form-group">
+                                <label>Attribute:</label>
+                                <select id="attribute-select" class="form-control" onchange="loadAttributeValues();">
+                                    <option value="">Select Attribute</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddAttributeValueDialog();">Add Value</button>
+                            <table class="table table-striped table-bordered" id="attribute-values-table" style="margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Value</th>
+                                        <th>Display Value</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="variant-list">
+                            <h4>Product Variants</h4>
+                            <button class="btn btn-primary btn-sm" onclick="openAddVariantDialog();">Add Variant</button>
+                            <table class="table table-striped table-bordered" id="variants-table" style="margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>SKU</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Cost</th>
+                                        <th>Attributes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="variant-stock">
+                            <h4>Variant Stock</h4>
+                            <div class="form-group">
+                                <label>Location:</label>
+                                <select id="stock-location-select" class="form-control" onchange="loadVariantStock();">
+                                    <option value="">Select Location</option>
+                                </select>
+                            </div>
+                            <table class="table table-striped table-bordered" id="variant-stock-table" style="margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>Variant</th>
+                                        <th>Current Stock</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -472,6 +578,9 @@
             }
         }
         $("#editdialog").dialog("open");
+        
+        // Load variant data for the Variants tab
+        loadProductVariants(item.id);
     }
     function addItemModifier(){
         $("#itemmodtable").append('<tr><td><input onchange="var row = $(this).parent().parent(); if ($(this).val()>row.find(\'.modminqty\').val()) row.find(\'.modminqty\').val($(this).val())" type="text" style="width: 40px" class="modqty" value="0"/></td><td><input type="text" style="width: 40px" class="modminqty" value="0"/></td><td><input type="text" style="width: 40px" class="modmaxqty" value="0"/></td><td><input style="width: 130px" type="text" class="modname" value=""/></td><td><input type="text" style="width: 60px" class="modprice" value="0.00"/></td><td style="text-align: right;"><button class="btn btn-danger btn-xs" onclick="$(this).parent().parent().remove();">X</button></td></tr>');
@@ -770,6 +879,469 @@
     function setModalLoaderSubStatus(status){
         $("#modalloader_substatus").text(status);
     }
+
+    // Variant Management Functions
+    var currentItemId = null;
+
+    function loadProductVariants(itemId) {
+        currentItemId = itemId;
+        loadProductAttributes();
+        loadProductVariantsList();
+        loadLocationsForStock();
+        loadAttributesForSelect();
+    }
+
+    function loadProductAttributes() {
+        if (!currentItemId) return;
+        
+        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
+            if (data && data.data) {
+                populateAttributesTable(data.data);
+            }
+        });
+    }
+
+    function populateAttributesTable(attributes) {
+        var tbody = $("#attributes-table tbody");
+        tbody.empty();
+        
+        for (var i = 0; i < attributes.length; i++) {
+            var attr = attributes[i];
+            var row = '<tr>' +
+                '<td>' + attr.id + '</td>' +
+                '<td>' + attr.name + '</td>' +
+                '<td>' + (attr.display_name || attr.name) + '</td>' +
+                '<td>' +
+                    '<button class="btn btn-xs btn-danger" onclick="deleteAttribute(' + attr.id + ')">Delete</button>' +
+                '</td>' +
+                '</tr>';
+            tbody.append(row);
+        }
+    }
+
+    function openAddAttributeDialog() {
+        $("#new-attribute-name").val("");
+        $("#new-attribute-display-name").val("");
+        
+        $("#add-attribute-dialog").dialog({
+            modal: true,
+            title: "Add Product Attribute",
+            width: 400,
+            buttons: {
+                "Add": function() {
+                    addAttribute();
+                    $(this).dialog("close");
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+    function addAttribute() {
+        var name = $("#new-attribute-name").val().trim();
+        var displayName = $("#new-attribute-display-name").val().trim();
+        
+        if (!name) {
+            POS.notifications.error("Attribute name is required");
+            return;
+        }
+        
+        POS.sendJsonDataAsync("attributes/add", JSON.stringify({
+            product_id: currentItemId,
+            name: name,
+            display_name: displayName || name
+        }), function(data) {
+            if (data && data.errorCode === "OK") {
+                loadProductAttributes();
+                POS.notifications.success("Attribute added successfully");
+            } else {
+                POS.notifications.error("Failed to add attribute");
+            }
+        });
+    }
+
+    function deleteAttribute(attributeId) {
+        if (confirm("Are you sure you want to delete this attribute?")) {
+            POS.sendJsonDataAsync("attributes/delete", JSON.stringify({
+                id: attributeId
+            }), function(data) {
+                if (data && data.errorCode === "OK") {
+                    loadProductAttributes();
+                    POS.notifications.success("Attribute deleted successfully");
+                } else {
+                    POS.notifications.error("Failed to delete attribute");
+                }
+            });
+        }
+    }
+
+    function loadAttributeValues() {
+        var attributeId = $("#attribute-select").val();
+        if (!attributeId) {
+            $("#attribute-values-table tbody").empty();
+            return;
+        }
+        
+        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({attribute_id: attributeId}), function(data) {
+            if (data && data.data) {
+                populateAttributeValuesTable(data.data);
+            }
+        });
+    }
+
+    function populateAttributeValuesTable(values) {
+        var tbody = $("#attribute-values-table tbody");
+        tbody.empty();
+        
+        for (var i = 0; i < values.length; i++) {
+            var value = values[i];
+            var row = '<tr>' +
+                '<td>' + value.id + '</td>' +
+                '<td>' + value.value + '</td>' +
+                '<td>' + (value.display_value || value.value) + '</td>' +
+                '<td>' +
+                    '<button class="btn btn-xs btn-danger" onclick="deleteAttributeValue(' + value.id + ')">Delete</button>' +
+                '</td>' +
+                '</tr>';
+            tbody.append(row);
+        }
+    }
+
+    function openAddAttributeValueDialog() {
+        var attributeId = $("#attribute-select").val();
+        if (!attributeId) {
+            POS.notifications.error("Please select an attribute first");
+            return;
+        }
+        
+        $("#new-value-attribute-id").val(attributeId);
+        $("#new-attribute-value").val("");
+        $("#new-attribute-display-value").val("");
+        
+        $("#add-attribute-value-dialog").dialog({
+            modal: true,
+            title: "Add Attribute Value",
+            width: 400,
+            buttons: {
+                "Add": function() {
+                    addAttributeValue();
+                    $(this).dialog("close");
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+    function addAttributeValue() {
+        var attributeId = $("#new-value-attribute-id").val();
+        var value = $("#new-attribute-value").val().trim();
+        var displayValue = $("#new-attribute-display-value").val().trim();
+        
+        if (!value) {
+            POS.notifications.error("Attribute value is required");
+            return;
+        }
+        
+        POS.sendJsonDataAsync("attribute-values/add", JSON.stringify({
+            attribute_id: attributeId,
+            value: value,
+            display_value: displayValue || value
+        }), function(data) {
+            if (data && data.errorCode === "OK") {
+                loadAttributeValues();
+                POS.notifications.success("Attribute value added successfully");
+            } else {
+                POS.notifications.error("Failed to add attribute value");
+            }
+        });
+    }
+
+    function deleteAttributeValue(valueId) {
+        if (confirm("Are you sure you want to delete this attribute value?")) {
+            POS.sendJsonDataAsync("attribute-values/delete", JSON.stringify({
+                id: valueId
+            }), function(data) {
+                if (data && data.errorCode === "OK") {
+                    loadAttributeValues();
+                    POS.notifications.success("Attribute value deleted successfully");
+                } else {
+                    POS.notifications.error("Failed to delete attribute value");
+                }
+            });
+        }
+    }
+
+    function loadProductVariantsList() {
+        if (!currentItemId) return;
+        
+        POS.sendJsonDataAsync("variants/get", JSON.stringify({product_id: currentItemId}), function(data) {
+            if (data && data.data) {
+                populateVariantsTable(data.data);
+            }
+        });
+    }
+
+    function populateVariantsTable(variants) {
+        var tbody = $("#variants-table tbody");
+        tbody.empty();
+        
+        for (var i = 0; i < variants.length; i++) {
+            var variant = variants[i];
+            var attributes = variant.attributes || [];
+            var attrDisplay = attributes.map(function(attr) {
+                return attr.display_value || attr.value;
+            }).join(", ");
+            
+            var row = '<tr>' +
+                '<td>' + variant.id + '</td>' +
+                '<td>' + (variant.sku || '') + '</td>' +
+                '<td>' + (variant.name || 'Variant ' + variant.id) + '</td>' +
+                '<td>' + POS.util.currencyFormat(variant.price || 0) + '</td>' +
+                '<td>' + POS.util.currencyFormat(variant.cost || 0) + '</td>' +
+                '<td>' + attrDisplay + '</td>' +
+                '<td>' +
+                    '<button class="btn btn-xs btn-danger" onclick="deleteVariant(' + variant.id + ')">Delete</button>' +
+                '</td>' +
+                '</tr>';
+            tbody.append(row);
+        }
+    }
+
+    function openAddVariantDialog() {
+        // Load attributes for selection
+        POS.sendJsonDataAsync("admin/attributes", JSON.stringify({product_id: currentItemId}), function(data) {
+            if (data && data.data) {
+                buildVariantAttributesSelection(data.data);
+                
+                $("#new-variant-sku").val("");
+                $("#new-variant-price").val("");
+                $("#new-variant-cost").val("");
+                
+                $("#add-variant-dialog").dialog({
+                    modal: true,
+                    title: "Add Product Variant",
+                    width: 600,
+                    height: 500,
+                    buttons: {
+                        "Add": function() {
+                            addVariant();
+                            $(this).dialog("close");
+                        },
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function buildVariantAttributesSelection(attributes) {
+        var container = $("#variant-attributes-selection");
+        container.empty();
+        
+        if (attributes.length === 0) {
+            container.html("<p>No attributes defined for this product.</p>");
+            return;
+        }
+        
+        for (var i = 0; i < attributes.length; i++) {
+            var attr = attributes[i];
+            var attrDiv = '<div class="form-group">' +
+                '<label>' + attr.display_name + ':</label>' +
+                '<select class="form-control variant-attribute-select" data-attribute-id="' + attr.id + '">' +
+                '<option value="">Select ' + attr.display_name + '</option>' +
+                '</select>' +
+                '</div>';
+            container.append(attrDiv);
+            
+            // Load values for this attribute
+            loadAttributeValuesForSelection(attr.id);
+        }
+    }
+
+    function loadAttributeValuesForSelection(attributeId) {
+        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({attribute_id: attributeId}), function(data) {
+            if (data && data.data) {
+                var select = $('select[data-attribute-id="' + attributeId + '"]');
+                select.empty();
+                select.append('<option value="">Select value</option>');
+                
+                for (var i = 0; i < data.data.length; i++) {
+                    var value = data.data[i];
+                    select.append('<option value="' + value.id + '">' + (value.display_value || value.value) + '</option>');
+                }
+            }
+        });
+    }
+
+    function addVariant() {
+        var sku = $("#new-variant-sku").val().trim();
+        var price = $("#new-variant-price").val().trim();
+        var cost = $("#new-variant-cost").val().trim();
+        
+        // Collect selected attribute values
+        var attributes = [];
+        $(".variant-attribute-select").each(function() {
+            var valueId = $(this).val();
+            if (valueId) {
+                attributes.push(parseInt(valueId));
+            }
+        });
+        
+        if (attributes.length === 0) {
+            POS.notifications.error("Please select at least one attribute value");
+            return;
+        }
+        
+        var variantData = {
+            product_id: currentItemId,
+            sku: sku,
+            attribute_value_ids: attributes
+        };
+        
+        if (price) variantData.price = parseFloat(price);
+        if (cost) variantData.cost = parseFloat(cost);
+        
+        POS.sendJsonDataAsync("variants/add", JSON.stringify(variantData), function(data) {
+            if (data && data.errorCode === "OK") {
+                loadProductVariantsList();
+                POS.notifications.success("Variant added successfully");
+            } else {
+                POS.notifications.error("Failed to add variant: " + (data.error || "Unknown error"));
+            }
+        });
+    }
+
+    function deleteVariant(variantId) {
+        if (confirm("Are you sure you want to delete this variant?")) {
+            POS.sendJsonDataAsync("variants/delete", JSON.stringify({
+                id: variantId
+            }), function(data) {
+                if (data && data.errorCode === "OK") {
+                    loadProductVariantsList();
+                    POS.notifications.success("Variant deleted successfully");
+                } else {
+                    POS.notifications.error("Failed to delete variant");
+                }
+            });
+        }
+    }
+
+    function loadLocationsForStock() {
+        POS.sendJsonDataAsync("locations/get", JSON.stringify(""), function(data) {
+            if (data) {
+                var select = $("#stock-location-select");
+                select.empty();
+                select.append('<option value="">Select Location</option>');
+                
+                for (var i = 0; i < data.length; i++) {
+                    var location = data[i];
+                    select.append('<option value="' + location.id + '">' + location.name + '</option>');
+                }
+            }
+        });
+    }
+
+    function loadAttributesForSelect() {
+        if (!currentItemId) return;
+        
+        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
+            if (data && data.data) {
+                var select = $("#attribute-select");
+                select.empty();
+                select.append('<option value="">Select Attribute</option>');
+                
+                for (var i = 0; i < data.data.length; i++) {
+                    var attr = data.data[i];
+                    select.append('<option value="' + attr.id + '">' + attr.display_name + '</option>');
+                }
+            }
+        });
+    }
+
+    function loadVariantStock() {
+        var locationId = $("#stock-location-select").val();
+        if (!locationId || !currentItemId) {
+            $("#variant-stock-table tbody").empty();
+            return;
+        }
+        
+        POS.sendJsonDataAsync("variants/stock/get", JSON.stringify({
+            product_id: currentItemId,
+            location_id: locationId
+        }), function(data) {
+            if (data && data.data) {
+                populateVariantStockTable(data.data);
+            }
+        });
+    }
+
+    function populateVariantStockTable(stockData) {
+        var tbody = $("#variant-stock-table tbody");
+        tbody.empty();
+        
+        for (var i = 0; i < stockData.length; i++) {
+            var stock = stockData[i];
+            var row = '<tr>' +
+                '<td>' + (stock.variant_name || 'Variant ' + stock.variant_id) + '</td>' +
+                '<td>' + (stock.stock_level || 0) + '</td>' +
+                '<td>' +
+                    '<button class="btn btn-xs btn-primary" onclick="editVariantStock(' + stock.variant_id + ', ' + stock.location_id + ', ' + (stock.stock_level || 0) + ', \'' + (stock.variant_name || '') + '\', \'' + (stock.location_name || '') + '\')">Edit</button>' +
+                '</td>' +
+                '</tr>';
+            tbody.append(row);
+        }
+    }
+
+    function editVariantStock(variantId, locationId, currentStock, variantName, locationName) {
+        $("#edit-stock-variant-name").text(variantName || 'Variant ' + variantId);
+        $("#edit-stock-location-name").text(locationName);
+        $("#edit-stock-current").text(currentStock);
+        $("#edit-stock-new").val(currentStock);
+        
+        $("#edit-variant-stock-dialog").data("variant-id", variantId);
+        $("#edit-variant-stock-dialog").data("location-id", locationId);
+        
+        $("#edit-variant-stock-dialog").dialog({
+            modal: true,
+            title: "Edit Variant Stock",
+            width: 400,
+            buttons: {
+                "Save": function() {
+                    saveVariantStock();
+                    $(this).dialog("close");
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+    function saveVariantStock() {
+        var variantId = $("#edit-variant-stock-dialog").data("variant-id");
+        var locationId = $("#edit-variant-stock-dialog").data("location-id");
+        var newStock = parseFloat($("#edit-stock-new").val()) || 0;
+        
+        POS.sendJsonDataAsync("variants/stock/set", JSON.stringify({
+            variant_id: variantId,
+            location_id: locationId,
+            stock_level: newStock
+        }), function(data) {
+            if (data && data.errorCode === "OK") {
+                loadVariantStock();
+                POS.notifications.success("Stock updated successfully");
+            } else {
+                POS.notifications.error("Failed to update stock");
+            }
+        });
+    }
+
 </script>
 <div id="modalloader" class="hide" style="width: 360px; height: 320px; text-align: center;">
     <img id="modalloader_img" style="width: 128px; height: auto;" src="../assets/images/cloud_loader.gif"/>
@@ -780,6 +1352,86 @@
     <h5 id="modalloader_substatus"></h5>
     <button id="modalloader_cbtn" class="btn btn-primary" style="display: none; margin-top:40px;" onclick="$('#modalloader').dialog('close');">Close</button>
 </div>
+
+<!-- Variant Management Dialogs -->
+<div id="add-attribute-dialog" class="hide">
+    <table>
+        <tr>
+            <td style="text-align: right;"><label>Name:</label></td>
+            <td><input id="new-attribute-name" type="text" placeholder="e.g., Color, Size"/></td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>Display Name:</label></td>
+            <td><input id="new-attribute-display-name" type="text" placeholder="e.g., Color, Size"/></td>
+        </tr>
+    </table>
+</div>
+
+<div id="add-attribute-value-dialog" class="hide">
+    <table>
+        <tr>
+            <td style="text-align: right;"><label>Attribute:</label></td>
+            <td>
+                <select id="new-value-attribute-id" class="form-control">
+                    <option value="">Select Attribute</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>Value:</label></td>
+            <td><input id="new-attribute-value" type="text" placeholder="e.g., Red, Large"/></td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>Display Value:</label></td>
+            <td><input id="new-attribute-display-value" type="text" placeholder="e.g., Red, Large"/></td>
+        </tr>
+    </table>
+</div>
+
+<div id="add-variant-dialog" class="hide">
+    <div style="max-height: 400px; overflow-y: auto;">
+        <table>
+            <tr>
+                <td style="text-align: right;"><label>SKU:</label></td>
+                <td><input id="new-variant-sku" type="text" placeholder="Unique SKU code"/></td>
+            </tr>
+            <tr>
+                <td style="text-align: right;"><label>Price:</label></td>
+                <td><input id="new-variant-price" type="text" placeholder="Override price (optional)"/></td>
+            </tr>
+            <tr>
+                <td style="text-align: right;"><label>Cost:</label></td>
+                <td><input id="new-variant-cost" type="text" placeholder="Override cost (optional)"/></td>
+            </tr>
+        </table>
+        <h4>Attributes</h4>
+        <div id="variant-attributes-selection">
+            <!-- Attribute selection will be populated here -->
+        </div>
+    </div>
+</div>
+
+<div id="edit-variant-stock-dialog" class="hide">
+    <table>
+        <tr>
+            <td style="text-align: right;"><label>Variant:</label></td>
+            <td><span id="edit-stock-variant-name"></span></td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>Location:</label></td>
+            <td><span id="edit-stock-location-name"></span></td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>Current Stock:</label></td>
+            <td><span id="edit-stock-current"></span></td>
+        </tr>
+        <tr>
+            <td style="text-align: right;"><label>New Stock:</label></td>
+            <td><input id="edit-stock-new" type="number" min="0" step="0.01"/></td>
+        </tr>
+    </table>
+</div>
+
 <style type="text/css">
     #itemstable_processing {
         display: none;

@@ -45,16 +45,136 @@ function POSItems() {
   };
 
   /**
-   *
-   * @param {Number} id
+   * Adds an item from an item ID, checking for variants
+   * @param {number} itemId
    */
-  this.addItemFromId = function (id) {
-    var item = POS.getItemsTable()[id];
-    if (item === null) {
+  this.addItemFromId = function (itemId) {
+    var item = POS.getItemsTable()[itemId];
+    if (item === null || item === undefined || item === "") {
       POS.notifications.error("Item not found", "Item Error");
+      $("#codeinput").val("");
     } else {
-      // add the item
-      addItem(item);
+      // Check if item has variants
+      if (item.has_variants && item.variants && item.variants.length > 0) {
+        // Show variant selection dialog
+        this.showVariantSelectionDialog(item);
+      } else {
+        // Add the item directly
+        addItem(item);
+      }
+    }
+  };
+
+  /**
+   * Shows variant selection dialog for products with variants
+   * @param {Object} item
+   */
+  this.showVariantSelectionDialog = function (item) {
+    var dialogHtml = '<div id="variant-selection-dialog" title="Select Variant - ' + item.name + '">' +
+      '<div style="max-height: 400px; overflow-y: auto;">';
+
+    if (item.variants && item.variants.length > 0) {
+      dialogHtml += '<table class="table table-striped table-bordered">';
+      dialogHtml += '<thead><tr><th>Variant</th><th>SKU</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>';
+      dialogHtml += '<tbody>';
+
+      for (var i = 0; i < item.variants.length; i++) {
+        var variant = item.variants[i];
+        var variantName = variant.name || this.buildVariantName(variant);
+        var stockLevel = variant.stock_level !== undefined ? variant.stock_level : 'N/A';
+
+        dialogHtml += '<tr>';
+        dialogHtml += '<td>' + variantName + '</td>';
+        dialogHtml += '<td>' + (variant.sku || '') + '</td>';
+        dialogHtml += '<td>' + POS.util.currencyFormat(variant.price || item.price) + '</td>';
+        dialogHtml += '<td>' + stockLevel + '</td>';
+        dialogHtml += '<td><button class="btn btn-sm btn-primary" onclick="POS.items.selectVariant(' + item.id + ', ' + variant.id + ', ' + i + ')">Select</button></td>';
+        dialogHtml += '</tr>';
+      }
+
+      dialogHtml += '</tbody></table>';
+    } else {
+      dialogHtml += '<p>No variants available for this product.</p>';
+    }
+
+    dialogHtml += '</div></div>';
+
+    // Remove existing dialog if present
+    if ($('#variant-selection-dialog').length > 0) {
+      $('#variant-selection-dialog').remove();
+    }
+
+    // Add dialog to body
+    $('body').append(dialogHtml);
+
+    // Show dialog
+    $('#variant-selection-dialog').dialog({
+      modal: true,
+      width: 700,
+      height: 500,
+      buttons: {
+        Cancel: function() {
+          $(this).dialog('close');
+        }
+      },
+      close: function() {
+        $(this).remove();
+      }
+    });
+  };
+
+  /**
+   * Builds a variant name from attributes
+   * @param {Object} variant
+   * @returns {string}
+   */
+  this.buildVariantName = function (variant) {
+    if (!variant.attributes || variant.attributes.length === 0) {
+      return variant.name || 'Default';
+    }
+
+    var nameParts = [];
+    for (var i = 0; i < variant.attributes.length; i++) {
+      var attr = variant.attributes[i];
+      if (attr.display_value) {
+        nameParts.push(attr.display_value);
+      }
+    }
+
+    return nameParts.join(' / ');
+  };
+
+  /**
+   * Handles variant selection from the dialog
+   * @param {Number} productId
+   * @param {Number} variantId
+   * @param {Number} variantIndex
+   */
+  this.selectVariant = function (productId, variantId, variantIndex) {
+    var item = POS.getItemsTable()[productId];
+    if (item && item.variants && item.variants[variantIndex]) {
+      var variant = item.variants[variantIndex];
+
+      // Create a variant item object
+      var variantItem = {
+        id: productId,
+        variant_id: variantId,
+        name: item.name + ' (' + this.buildVariantName(variant) + ')',
+        code: variant.sku || item.code,
+        price: variant.price || item.price,
+        cost: variant.cost || item.cost,
+        taxid: item.taxid,
+        description: item.description,
+        alt_name: item.alt_name,
+        modifiers: item.modifiers,
+        variant_data: variant
+      };
+
+      // Close dialog
+      $('#variant-selection-dialog').dialog('close');
+
+      // Add the variant item to sale
+      addItem(variantItem);
     }
   };
 
@@ -106,12 +226,14 @@ function POSItems() {
 
     for (var i in items) {
       price = items[i].price == "" ? "??.??" : parseFloat(items[i].price).toFixed(2);
+      var variantIndicator = items[i].has_variants ? '<i class="icon-tags" style="color: #007cba; margin-left: 5px;" title="Has variants"></i>' : '';
       iboxitems.append(
         '<div class="iboxitem" onclick="POS.items.addItemFromId(' +
           items[i].id +
           '); toggleItemBox(false);">' +
           "<h6>" +
           items[i].name +
+          variantIndicator +
           "</h6>" +
           "<h5>" +
           POS.util.currencyFormat(price) +
@@ -224,30 +346,49 @@ function POSItems() {
   function addItem(item) {
     // Item cost may be null if we're adding stored items that were created in a previous version, explicitly set the cost in this case.
     if (!item.hasOwnProperty("cost")) item.cost = 0.0;
+
+    // Prepare item data with variant information
+    var itemData = {
+      desc: item.description,
+      cost: item.cost,
+      unit_original: item.price,
+      alt_name: item.alt_name
+    };
+
+    // Add variant information if present
+    if (item.variant_id) {
+      itemData.variant_id = item.variant_id;
+      itemData.variant_data = item.variant_data;
+    }
+
     // TODO: remove last row from table if its invalid?
     // check if a priced item is already present in the sale and if so increment it's qty
     if (item.price == "") {
       // insert item into table
-      addItemRow(1, item.name, item.price, item.taxid, item.id, { desc: item.description, cost: item.cost, unit_original: item.price, alt_name: item.alt_name });
+      addItemRow(1, item.name, item.price, item.taxid, item.id, itemData);
     } else {
-      if (!isItemAdded(item.id, true)) {
+      if (!isItemAdded(item.id, item.variant_id, true)) {
         // insert item into table
-        addItemRow(1, item.name, item.price, item.taxid, item.id, { desc: item.description, cost: item.cost, unit_original: item.price, alt_name: item.alt_name });
+        addItemRow(1, item.name, item.price, item.taxid, item.id, itemData);
       }
     }
     $("#codeinput").val("");
     POS.sales.updateSalesTotal();
   }
 
-  function isItemAdded(itemid, addqty) {
+  function isItemAdded(itemid, variantId, addqty) {
     var found = false;
     $("#itemtable")
       .children(".valid")
       .each(function (index, element) {
         var itemfield = $(element).find(".itemid");
-        if (itemfield.val() == itemid) {
+        var itemOptions = itemfield.data("options") || {};
+        var existingVariantId = itemOptions.variant_id;
+
+        // Check if item ID matches and variant IDs match (or both are undefined/null)
+        if (itemfield.val() == itemid && existingVariantId == variantId) {
           // check for item modifiers, a new line item must be added if a modifier is used
-          if (itemfield.data("options").hasOwnProperty("mod") && itemfield.data("options").mod.items.length > 0) {
+          if (itemOptions.hasOwnProperty("mod") && itemOptions.mod.items.length > 0) {
             return true;
           }
           if (addqty)

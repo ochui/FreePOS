@@ -120,11 +120,11 @@ class Application
             $r->addRoute(['GET', 'POST'], '/api/variants/attribute-values/edit/{id}', [VariantsController::class, 'updateAttributeValue']);
             $r->addRoute(['GET', 'POST'], '/api/variants/attribute-values/delete/{id}', [VariantsController::class, 'deleteAttributeValue']);
             $r->addRoute(['GET', 'POST'], '/api/variants/product/{id}/get', [VariantsController::class, 'getProductVariants']);
-            $r->addRoute(['GET', 'POST'], '/api/variants/add', [VariantsController::class, 'createVariant']);
+            // $r->addRoute(['GET', 'POST'], '/api/variants/add', [VariantsController::class, 'createVariant']);
             $r->addRoute(['GET', 'POST'], '/api/variants/edit/{id}', [VariantsController::class, 'updateVariant']);
             $r->addRoute(['GET', 'POST'], '/api/variants/delete/{id}', [VariantsController::class, 'deleteVariant']);
-            $r->addRoute(['GET', 'POST'], '/api/variants/stock/get', [VariantsController::class, 'getVariantStock']);
-            $r->addRoute(['GET', 'POST'], '/api/variants/stock/set', [VariantsController::class, 'updateVariantStock']);
+            // $r->addRoute(['GET', 'POST'], '/api/variants/stock/get', [VariantsController::class, 'getVariantStock']);
+            // $r->addRoute(['GET', 'POST'], '/api/variants/stock/set', [VariantsController::class, 'updateVariantStock']);
             $r->addRoute(['GET', 'POST'], '/api/variants/find', [VariantsController::class, 'findVariantByAttributes']);
             $r->addRoute(['GET', 'POST'], '/api/items/{id}/make-variant-parent', [VariantsController::class, 'makeVariantParent']);
 
