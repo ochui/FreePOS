@@ -21,6 +21,9 @@ use App\Database\StoredItemsModel;
 use App\Database\SuppliersModel;
 use App\Database\TaxItemsModel;
 use App\Database\TaxRulesModel;
+use App\Database\ProductVariantsModel;
+use App\Database\AttributesModel;
+use App\Utility\VariantsHelper;
 
 
 class PosData
@@ -350,6 +353,92 @@ class PosData
             $result['data'] = $stockdata;
         } else {
             $result['error'] = $stockMdl->errorInfo;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get product variants data for POS
+     * @param array $result
+     * @return array of variant records
+     */
+    public function getVariants($result)
+    {
+        $variantsMdl = new ProductVariantsModel();
+        $variants = $variantsMdl->get(null, null, null, null, true); // active_only = true
+        
+        if (is_array($variants)) {
+            $variantData = [];
+            foreach ($variants as $variant) {
+                // Include attributes for each variant
+                $variant['attributes'] = $variantsMdl->getVariantAttributes($variant['id']);
+                $variantData[$variant['id']] = $variant;
+            }
+            $result['data'] = $variantData;
+        } else {
+            $result['error'] = $variantsMdl->errorInfo;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get attributes data for POS
+     * @param array $result
+     * @return array of attribute records
+     */
+    public function getAttributes($result)
+    {
+        $attrMdl = new AttributesModel();
+        $attributes = $attrMdl->getAttributesWithValues();
+        
+        if (is_array($attributes)) {
+            $result['data'] = $attributes;
+        } else {
+            $result['error'] = $attrMdl->errorInfo;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Find a variant by barcode or SKU
+     * Used for POS scanning
+     * @param string $code Barcode or SKU
+     * @param array $result
+     * @return array
+     */
+    public function findVariantByCode($code, $result)
+    {
+        $variant = VariantsHelper::findByCode($code);
+        
+        if ($variant !== null) {
+            // Get full variant info for sale
+            $saleData = VariantsHelper::getVariantForSale($variant['id']);
+            $result['data'] = $saleData;
+        } else {
+            $result['error'] = 'Item not found';
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get variants for a specific product (for variant picker)
+     * @param int $product_id Product ID
+     * @param int|null $location_id Optional location ID for stock info
+     * @param array $result
+     * @return array
+     */
+    public function getProductVariants($product_id, $location_id, $result)
+    {
+        $variants = VariantsHelper::getProductVariantsWithStock($product_id, $location_id);
+        
+        if (is_array($variants)) {
+            $result['data'] = $variants;
+        } else {
+            $result['error'] = 'Failed to load variants';
         }
 
         return $result;

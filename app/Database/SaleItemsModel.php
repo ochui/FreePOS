@@ -14,7 +14,7 @@ class SaleItemsModel extends DbConfig
     /**
      * @var array of available columns
      */
-    protected $_columns = ['id', 'saleid', 'storeditemid', 'saleitemid', 'qty', 'name', 'description', 'taxid', 'unit', 'price', 'refundqty'];
+    protected $_columns = ['id', 'saleid', 'storeditemid', 'variant_id', 'saleitemid', 'qty', 'name', 'description', 'taxid', 'unit', 'price', 'refundqty'];
 
     /**
      * Init the PDO object
@@ -36,15 +36,18 @@ class SaleItemsModel extends DbConfig
      * @param $tax
      * @param $unit
      * @param $price
+     * @param int $unit_original
+     * @param int|null $variant_id Optional variant ID
      *
      * @return bool|string Returns false on an unexpected failure, returns -1 if a unique constraint in the database fails, or the new rows id if the insert is successful
      */
-    public function create($saleid, $sitemid, $saleitemid, $qty, $name, $desc, $taxid, $tax, $cost, $unit, $price, $unit_original = 0)
+    public function create($saleid, $sitemid, $saleitemid, $qty, $name, $desc, $taxid, $tax, $cost, $unit, $price, $unit_original = 0, $variant_id = null)
     {
-        $sql = "INSERT INTO sale_items (saleid, storeditemid, saleitemid, qty, name, description, taxid, tax, tax_incl, tax_total, cost, unit_original, unit, price, refundqty) VALUES (:saleid, :sitemid, :saleitemid, :qty, :name, :description, :taxid, :tax, :tax_incl, :tax_total, :cost, :unit_original, :unit, :price, 0)";
+        $sql = "INSERT INTO sale_items (saleid, storeditemid, variant_id, saleitemid, qty, name, description, taxid, tax, tax_incl, tax_total, cost, unit_original, unit, price, refundqty) VALUES (:saleid, :sitemid, :variant_id, :saleitemid, :qty, :name, :description, :taxid, :tax, :tax_incl, :tax_total, :cost, :unit_original, :unit, :price, 0)";
         $placeholders = [
             ':saleid'       => $saleid,
             ':sitemid'      => $sitemid,
+            ':variant_id'   => $variant_id,
             ':saleitemid'   => $saleitemid,
             ':qty'          => $qty,
             ':name'         => $name,

@@ -52,11 +52,12 @@ class AdminStock
      * @param $locationid
      * @param $amount
      * @param bool $decrement
+     * @param int|null $variant_id Optional variant ID
      * @return bool
      */
-    public function incrementStockLevel($storeditemid, $locationid, $amount, $decrement = false)
+    public function incrementStockLevel($storeditemid, $locationid, $amount, $decrement = false, $variant_id = null)
     {
-        if ($this->stockMdl->incrementStockLevel($storeditemid, $locationid, $amount, $decrement) !== false) {
+        if ($this->stockMdl->incrementStockLevel($storeditemid, $locationid, $amount, $decrement, $variant_id) !== false) {
             return true;
         }
         return false;
