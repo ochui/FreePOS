@@ -24,6 +24,7 @@ use App\Database\SaleVoidsModel;
 use App\Utility\JsonValidate;
 use App\Utility\Logger;
 use App\Utility\Mail;
+use App\Utility\VariantsHelper;
 
 class PosSale
 {
@@ -488,7 +489,11 @@ class PosSale
                         $posStock = new AdminStock();
                         foreach ($this->jsonobj->items as $item) {
                             if ($item->sitemid > 0) {
-                                $posStock->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, false);
+                                // Resolve variant ID for void - use variant_id if available
+                                $variant_id = isset($item->variant_id) && $item->variant_id > 0 ? 
+                                    $item->variant_id : 
+                                    VariantsHelper::resolveVariantId($item->sitemid);
+                                $posStock->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, false, $variant_id);
                             }
                         }
                     }
@@ -516,14 +521,20 @@ class PosSale
             // fix for offline sales not containing cost field and getting stuck
             if (!isset($item->cost)) $item->cost = 0.00;
             $unit_original = (isset($item->unit_original) ? $item->unit_original : $item->unit);
-            if (!$res = $itemsMdl->create($this->id, $item->sitemid, $item->ref, $item->qty, $item->name, $item->desc, $item->taxid, $item->tax, $item->cost, $item->unit, $item->price, $unit_original)) {
+            
+            // Resolve variant ID - use provided variant_id or get default variant for the product
+            $variant_id = isset($item->variant_id) && $item->variant_id > 0 ? 
+                $item->variant_id : 
+                VariantsHelper::resolveVariantId($item->sitemid);
+            
+            if (!$res = $itemsMdl->create($this->id, $item->sitemid, $item->ref, $item->qty, $item->name, $item->desc, $item->taxid, $item->tax, $item->cost, $item->unit, $item->price, $unit_original, $variant_id)) {
                 $this->itemErr = $itemsMdl->errorInfo;
                 return false;
             }
-            // decrement stock level
+            // decrement stock level with variant support
             if ($item->sitemid > 0) {
                 /*$stockMdl->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, true);*/
-                $posStock->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, true);
+                $posStock->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, true, $variant_id);
             }
             $this->jsonobj->items[$key]->id = $res;
         }
