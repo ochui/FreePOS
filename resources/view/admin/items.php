@@ -923,7 +923,7 @@
         $("#new-attribute-name").val("");
         $("#new-attribute-display-name").val("");
         
-        $("#add-attribute-dialog").dialog({
+        $("#add-attribute-dialog").removeClass('hide').dialog({
             modal: true,
             title: "Add Product Attribute",
             width: 400,
@@ -1020,7 +1020,7 @@
         $("#new-attribute-value").val("");
         $("#new-attribute-display-value").val("");
         
-        $("#add-attribute-value-dialog").dialog({
+        $("#add-attribute-value-dialog").removeClass('hide').dialog({
             modal: true,
             title: "Add Attribute Value",
             width: 400,
@@ -1121,7 +1121,7 @@
                 $("#new-variant-price").val("");
                 $("#new-variant-cost").val("");
                 
-                $("#add-variant-dialog").dialog({
+                $("#add-variant-dialog").removeClass('hide').dialog({
                     modal: true,
                     title: "Add Product Variant",
                     width: 600,
@@ -1307,7 +1307,7 @@
         $("#edit-variant-stock-dialog").data("variant-id", variantId);
         $("#edit-variant-stock-dialog").data("location-id", locationId);
         
-        $("#edit-variant-stock-dialog").dialog({
+        $("#edit-variant-stock-dialog").removeClass('hide').dialog({
             modal: true,
             title: "Edit Variant Stock",
             width: 400,
