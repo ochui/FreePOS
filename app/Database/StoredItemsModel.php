@@ -39,9 +39,10 @@ class StoredItemsModel extends DbConfig
     /**
      * @param null $Id
      * @param null $code
+     * @param bool $includeVariants
      * @return array|bool Returns false on an unexpected failure or an array of selected rows
      */
-    public function get($Id = null, $code = null)
+    public function get($Id = null, $code = null, $includeVariants = false)
     {
         $sql = 'SELECT * FROM stored_items';
         $placeholders = [];
@@ -67,6 +68,13 @@ class StoredItemsModel extends DbConfig
         foreach ($items as $key => $item) {
             $data = json_decode($item['data'], true);
             $data['id'] = $item['id'];
+            $data['is_variant_parent'] = $item['is_variant_parent'];
+            $data['variant_attributes'] = $item['variant_attributes'];
+
+            if ($includeVariants && $item['is_variant_parent']) {
+                $data['variants'] = $this->getProductVariants($item['id']);
+            }
+
             $items[$key] = $data;
         }
 
@@ -107,5 +115,44 @@ class StoredItemsModel extends DbConfig
         }
 
         return $this->delete($sql, $placeholders);
+    }
+
+    /**
+     * Get variants for a product
+     * @param int $productId
+     * @return array
+     */
+    public function getProductVariants($productId)
+    {
+        $variantsModel = new \App\Database\ProductVariantsModel();
+        return $variantsModel->get(null, $productId);
+    }
+
+    /**
+     * Convert product to variant parent
+     * @param int $productId
+     * @param array $variantAttributes
+     * @return bool|int
+     */
+    public function makeVariantParent($productId, $variantAttributes = [])
+    {
+        $sql = "UPDATE stored_items SET is_variant_parent = 1, variant_attributes = :attributes WHERE id = :id";
+        $placeholders = [
+            ":id" => $productId,
+            ":attributes" => json_encode($variantAttributes)
+        ];
+
+        return $this->update($sql, $placeholders);
+    }
+
+    /**
+     * Check if product has variants
+     * @param int $productId
+     * @return bool
+     */
+    public function hasVariants($productId)
+    {
+        $variants = $this->getProductVariants($productId);
+        return !empty($variants);
     }
 }
