@@ -88,6 +88,29 @@ class Application
             $r->addRoute(['GET', 'POST'], '/api/items/import/set', [AdminController::class, 'setItemImport']);
             $r->addRoute(['GET', 'POST'], '/api/items/import/start', [AdminController::class, 'startItemImport']);
 
+            // Product Attributes management
+            $r->addRoute(['GET', 'POST'], '/api/attributes/get', [AdminController::class, 'getProductAttributes']);
+            $r->addRoute(['GET', 'POST'], '/api/attributes/add', [AdminController::class, 'addProductAttribute']);
+            $r->addRoute(['GET', 'POST'], '/api/attributes/edit', [AdminController::class, 'updateProductAttribute']);
+            $r->addRoute(['GET', 'POST'], '/api/attributes/delete', [AdminController::class, 'deleteProductAttribute']);
+
+            // Product Attribute Values management
+            $r->addRoute(['GET', 'POST'], '/api/attribute-values/get', [AdminController::class, 'getProductAttributeValues']);
+            $r->addRoute(['GET', 'POST'], '/api/attribute-values/add', [AdminController::class, 'addProductAttributeValue']);
+            $r->addRoute(['GET', 'POST'], '/api/attribute-values/edit', [AdminController::class, 'updateProductAttributeValue']);
+            $r->addRoute(['GET', 'POST'], '/api/attribute-values/delete', [AdminController::class, 'deleteProductAttributeValue']);
+
+            // Product Variants management
+            $r->addRoute(['GET', 'POST'], '/api/variants/add', [AdminController::class, 'addProductVariant']);
+            $r->addRoute(['GET', 'POST'], '/api/variants/edit', [AdminController::class, 'updateProductVariant']);
+            $r->addRoute(['GET', 'POST'], '/api/variants/delete', [AdminController::class, 'deleteProductVariant']);
+            $r->addRoute(['GET', 'POST'], '/api/variants/get', [AdminController::class, 'getProductVariants']);
+
+            // Variant Stock management
+            $r->addRoute(['GET', 'POST'], '/api/variants/stock/get', [AdminController::class, 'getVariantStock']);
+            $r->addRoute(['GET', 'POST'], '/api/variants/stock/set', [AdminController::class, 'updateVariantStock']);
+            $r->addRoute(['GET', 'POST'], '/api/variants/stock/transfer', [AdminController::class, 'transferVariantStock']);
+
             $r->addRoute(['GET', 'POST'], '/api/variants/attributes/get', [VariantsController::class, 'getAttributes']);
             $r->addRoute(['GET', 'POST'], '/api/variants/attributes/add', [VariantsController::class, 'createAttribute']);
             $r->addRoute(['GET', 'POST'], '/api/variants/attributes/edit/{id}', [VariantsController::class, 'updateAttribute']);

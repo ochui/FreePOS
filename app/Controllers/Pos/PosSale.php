@@ -516,12 +516,17 @@ class PosSale
             // fix for offline sales not containing cost field and getting stuck
             if (!isset($item->cost)) $item->cost = 0.00;
             $unit_original = (isset($item->unit_original) ? $item->unit_original : $item->unit);
-            if (!$res = $itemsMdl->create($this->id, $item->sitemid, $item->ref, $item->qty, $item->name, $item->desc, $item->taxid, $item->tax, $item->cost, $item->unit, $item->price, $unit_original)) {
+            $variantId = (isset($item->variant_id) ? $item->variant_id : null);
+            if (!$res = $itemsMdl->create($this->id, $item->sitemid, $item->ref, $item->qty, $item->name, $item->desc, $item->taxid, $item->tax, $item->cost, $item->unit, $item->price, $unit_original, $variantId)) {
                 $this->itemErr = $itemsMdl->errorInfo;
                 return false;
             }
-            // decrement stock level
-            if ($item->sitemid > 0) {
+            // decrement stock level - use variant stock if variant_id is set
+            if ($variantId > 0) {
+                // Use variant stock model for variant-specific stock
+                $variantStockMdl = new \App\Database\VariantStockModel();
+                $variantStockMdl->incrementStockLevel($variantId, $this->jsonobj->locid, $item->qty, true);
+            } elseif ($item->sitemid > 0) {
                 /*$stockMdl->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, true);*/
                 $posStock->incrementStockLevel($item->sitemid, $this->jsonobj->locid, $item->qty, true);
             }

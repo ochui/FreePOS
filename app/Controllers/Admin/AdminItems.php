@@ -16,6 +16,10 @@ use App\Database\StoredItemsModel;
 use App\Database\SuppliersModel;
 use App\Database\TaxItemsModel;
 use App\Database\TaxRulesModel;
+use App\Database\ProductAttributesModel;
+use App\Database\ProductAttributeValuesModel;
+use App\Database\ProductVariantsModel;
+use App\Database\VariantStockModel;
 use App\Models\StoredItem;
 use App\Controllers\Pos\PosData;
 use App\Utility\EventStream;
@@ -931,5 +935,460 @@ class AdminItems
             $socket = new SocketIO();
             $socket->sendConfigUpdate($taxconfig['data'], "tax");
         }
+    }
+
+    // PRODUCT ATTRIBUTES
+    /**
+     * Add a product attribute
+     * @param $result
+     * @return mixed
+     */
+    public function addProductAttribute($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"name":"", "display_name":""}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate name
+        $attrMdl = new ProductAttributesModel();
+        $existing = $attrMdl->get();
+        foreach ($existing as $attr) {
+            if (strtolower($attr['name']) === strtolower($this->data->name)) {
+                $result['error'] = "An attribute with that name already exists";
+                return $result;
+            }
+        }
+        // create the new attribute
+        $qresult = $attrMdl->create($this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not add the attribute: " . $attrMdl->errorInfo;
+        } else {
+            $this->data->id = $qresult;
+            $result['data'] = $this->data;
+            // log data
+            Logger::write("Product attribute added with id:" . $this->data->id, "ATTRIBUTE", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Update a product attribute
+     * @param $result
+     * @return mixed
+     */
+    public function updateProductAttribute($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"id":1, "name":"", "display_name":""}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate name
+        $attrMdl = new ProductAttributesModel();
+        $existing = $attrMdl->get();
+        foreach ($existing as $attr) {
+            if (strtolower($attr['name']) === strtolower($this->data->name) && $attr['id'] != $this->data->id) {
+                $result['error'] = "An attribute with that name already exists";
+                return $result;
+            }
+        }
+        // update the attribute
+        $qresult = $attrMdl->edit($this->data->id, $this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not edit the attribute: " . $attrMdl->errorInfo;
+        } else {
+            $result['data'] = $this->data;
+            // log data
+            Logger::write("Product attribute updated with id:" . $this->data->id, "ATTRIBUTE", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Delete a product attribute
+     * @param $result
+     * @return mixed
+     */
+    public function deleteProductAttribute($result)
+    {
+        // validate input
+        if (!is_numeric($this->data->id)) {
+            $result['error'] = "A valid id must be supplied";
+            return $result;
+        }
+        $attrMdl = new ProductAttributesModel();
+        $qresult = $attrMdl->remove($this->data->id);
+        if ($qresult === false) {
+            $result['error'] = "Could not delete the attribute: " . $attrMdl->errorInfo;
+        } else {
+            $result['data'] = true;
+            // log data
+            Logger::write("Product attribute deleted with id:" . $this->data->id, "ATTRIBUTE");
+        }
+        return $result;
+    }
+
+    /**
+     * Get product attributes
+     * @param $result
+     * @return mixed
+     */
+    public function getProductAttributes($result)
+    {
+        $attrMdl = new ProductAttributesModel();
+        $attributes = $attrMdl->get();
+        if ($attributes === false) {
+            $result['error'] = "Could not get attributes: " . $attrMdl->errorInfo;
+        } else {
+            $result['data'] = $attributes;
+        }
+        return $result;
+    }
+
+    // PRODUCT ATTRIBUTE VALUES
+    /**
+     * Add a product attribute value
+     * @param $result
+     * @return mixed
+     */
+    public function addProductAttributeValue($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"attribute_id":1, "value":""}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate value for this attribute
+        $valMdl = new ProductAttributeValuesModel();
+        $existing = $valMdl->get(null, $this->data->attribute_id);
+        foreach ($existing as $val) {
+            if (strtolower($val['value']) === strtolower($this->data->value)) {
+                $result['error'] = "An attribute value with that value already exists for this attribute";
+                return $result;
+            }
+        }
+        // create the new attribute value
+        $qresult = $valMdl->create($this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not add the attribute value: " . $valMdl->errorInfo;
+        } else {
+            $this->data->id = $qresult;
+            $result['data'] = $this->data;
+            // log data
+            Logger::write("Product attribute value added with id:" . $this->data->id, "ATTRIBUTE_VALUE", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Update a product attribute value
+     * @param $result
+     * @return mixed
+     */
+    public function updateProductAttributeValue($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"id":1, "attribute_id":1, "value":""}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate value for this attribute
+        $valMdl = new ProductAttributeValuesModel();
+        $existing = $valMdl->get(null, $this->data->attribute_id);
+        foreach ($existing as $val) {
+            if (strtolower($val['value']) === strtolower($this->data->value) && $val['id'] != $this->data->id) {
+                $result['error'] = "An attribute value with that value already exists for this attribute";
+                return $result;
+            }
+        }
+        // update the attribute value
+        $qresult = $valMdl->edit($this->data->id, $this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not edit the attribute value: " . $valMdl->errorInfo;
+        } else {
+            $result['data'] = $this->data;
+            // log data
+            Logger::write("Product attribute value updated with id:" . $this->data->id, "ATTRIBUTE_VALUE", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Delete a product attribute value
+     * @param $result
+     * @return mixed
+     */
+    public function deleteProductAttributeValue($result)
+    {
+        // validate input
+        if (!is_numeric($this->data->id)) {
+            $result['error'] = "A valid id must be supplied";
+            return $result;
+        }
+        $valMdl = new ProductAttributeValuesModel();
+        $qresult = $valMdl->remove($this->data->id);
+        if ($qresult === false) {
+            $result['error'] = "Could not delete the attribute value: " . $valMdl->errorInfo;
+        } else {
+            $result['data'] = true;
+            // log data
+            Logger::write("Product attribute value deleted with id:" . $this->data->id, "ATTRIBUTE_VALUE");
+        }
+        return $result;
+    }
+
+    /**
+     * Get product attribute values for an attribute
+     * @param $result
+     * @return mixed
+     */
+    public function getProductAttributeValues($result)
+    {
+        // validate input
+        if (!isset($this->data->attribute_id) || !is_numeric($this->data->attribute_id)) {
+            $result['error'] = "A valid attribute_id must be supplied";
+            return $result;
+        }
+        $valMdl = new ProductAttributeValuesModel();
+        $values = $valMdl->get(null, $this->data->attribute_id);
+        if ($values === false) {
+            $result['error'] = "Could not get attribute values: " . $valMdl->errorInfo;
+        } else {
+            $result['data'] = $values;
+        }
+        return $result;
+    }
+
+    // PRODUCT VARIANTS
+    /**
+     * Add a product variant
+     * @param $result
+     * @return mixed
+     */
+    public function addProductVariant($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"product_id":1, "sku":"", "barcode":"", "price":-1, "cost":-1, "attributes":{}}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate SKU
+        $varMdl = new ProductVariantsModel();
+        $this->data->sku = strtoupper($this->data->sku); // make sure SKU is upper case
+        $existing = $varMdl->get(null, null, $this->data->sku);
+        if (sizeof($existing) > 0) {
+            $result['error'] = "A variant with that SKU already exists";
+            return $result;
+        }
+        // create the new variant
+        $qresult = $varMdl->create($this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not add the variant: " . $varMdl->errorInfo;
+        } else {
+            $this->data->id = $qresult;
+            $result['data'] = $this->data;
+            // broadcast the item update
+            $socket = new SocketIO();
+            $socket->sendItemUpdate($this->data->product_id);
+
+            // log data
+            Logger::write("Product variant added with id:" . $this->data->id, "VARIANT", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Update a product variant
+     * @param $result
+     * @return mixed
+     */
+    public function updateProductVariant($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"id":1, "product_id":1, "sku":"", "barcode":"", "price":-1, "cost":-1, "attributes":{}}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        // create model and check for duplicate SKU
+        $varMdl = new ProductVariantsModel();
+        $this->data->sku = strtoupper($this->data->sku); // make sure SKU is upper case
+        $existing = $varMdl->get(null, null, $this->data->sku);
+        foreach ($existing as $var) {
+            if ($var['id'] != $this->data->id) {
+                $result['error'] = "A variant with that SKU already exists";
+                return $result;
+            }
+        }
+        // update the variant
+        $qresult = $varMdl->edit($this->data->id, $this->data);
+        if ($qresult === false) {
+            $result['error'] = "Could not edit the variant: " . $varMdl->errorInfo;
+        } else {
+            $result['data'] = $this->data;
+            // broadcast the item update
+            $socket = new SocketIO();
+            $socket->sendItemUpdate($this->data->product_id);
+
+            // log data
+            Logger::write("Product variant updated with id:" . $this->data->id, "VARIANT", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Delete a product variant
+     * @param $result
+     * @return mixed
+     */
+    public function deleteProductVariant($result)
+    {
+        // validate input
+        if (!is_numeric($this->data->id)) {
+            $result['error'] = "A valid id must be supplied";
+            return $result;
+        }
+        $varMdl = new ProductVariantsModel();
+        // get variant info for logging and broadcasting
+        $variants = $varMdl->get($this->data->id);
+        $variant = $variants ? $variants[0] : null;
+        $qresult = $varMdl->remove($this->data->id);
+        if ($qresult === false) {
+            $result['error'] = "Could not delete the variant: " . $varMdl->errorInfo;
+        } else {
+            $result['data'] = true;
+            // broadcast the item update
+            if ($variant) {
+                $socket = new SocketIO();
+                $socket->sendItemUpdate($variant['product_id']);
+            }
+            // log data
+            Logger::write("Product variant deleted with id:" . $this->data->id, "VARIANT");
+        }
+        return $result;
+    }
+
+    /**
+     * Get product variants for a product
+     * @param $result
+     * @return mixed
+     */
+    public function getProductVariants($result)
+    {
+        // validate input
+        if (!isset($this->data->product_id) || !is_numeric($this->data->product_id)) {
+            $result['error'] = "A valid product_id must be supplied";
+            return $result;
+        }
+        $varMdl = new ProductVariantsModel();
+        $variants = $varMdl->get(null, $this->data->product_id);
+        if ($variants === false) {
+            $result['error'] = "Could not get variants: " . $varMdl->errorInfo;
+        } else {
+            $result['data'] = $variants;
+        }
+        return $result;
+    }
+
+    // VARIANT STOCK MANAGEMENT
+    /**
+     * Get variant stock levels
+     * @param $result
+     * @return mixed
+     */
+    public function getVariantStock($result)
+    {
+        // validate input
+        if (!isset($this->data->variant_id) || !is_numeric($this->data->variant_id)) {
+            $result['error'] = "A valid variant_id must be supplied";
+            return $result;
+        }
+        $stockMdl = new VariantStockModel();
+        $stock = $stockMdl->get($this->data->variant_id);
+        if ($stock === false) {
+            $result['error'] = "Could not get variant stock: " . $stockMdl->errorInfo;
+        } else {
+            $result['data'] = $stock;
+        }
+        return $result;
+    }
+
+    /**
+     * Update variant stock level
+     * @param $result
+     * @return mixed
+     */
+    public function updateVariantStock($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"variant_id":1, "location_id":1, "quantity":0}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        $stockMdl = new VariantStockModel();
+        $qresult = $stockMdl->setStockLevel($this->data->variant_id, $this->data->location_id, $this->data->quantity);
+        if ($qresult === false) {
+            $result['error'] = "Could not update variant stock: " . $stockMdl->errorInfo;
+        } else {
+            $result['data'] = true;
+            // broadcast the item update
+            $variantMdl = new ProductVariantsModel();
+            $variants = $variantMdl->get($this->data->variant_id);
+            $variant = $variants ? $variants[0] : null;
+            if ($variant) {
+                $socket = new SocketIO();
+                $socket->sendItemUpdate($variant['product_id']);
+            }
+            // log data
+            Logger::write("Variant stock updated for variant_id:" . $this->data->variant_id . " location_id:" . $this->data->location_id, "STOCK", json_encode($this->data));
+        }
+        return $result;
+    }
+
+    /**
+     * Transfer variant stock between locations
+     * @param $result
+     * @return mixed
+     */
+    public function transferVariantStock($result)
+    {
+        // validate input
+        $jsonval = new JsonValidate($this->data, '{"variant_id":1, "from_location_id":1, "to_location_id":1, "quantity":1}');
+        if (($errors = $jsonval->validate()) !== true) {
+            $result['error'] = $errors;
+            return $result;
+        }
+        $stockMdl = new VariantStockModel();
+        // First decrement stock from source location
+        $decrementResult = $stockMdl->incrementStockLevel($this->data->variant_id, $this->data->from_location_id, $this->data->quantity, true);
+        if ($decrementResult === false) {
+            $result['error'] = "Could not transfer variant stock: insufficient stock at source location";
+            return $result;
+        }
+        // Then increment stock at destination location
+        $incrementResult = $stockMdl->incrementStockLevel($this->data->variant_id, $this->data->to_location_id, $this->data->quantity, false);
+        if ($incrementResult === false) {
+            $result['error'] = "Could not transfer variant stock: failed to add stock to destination location";
+            return $result;
+        }
+        $result['data'] = true;
+        // broadcast the item update
+        $variantMdl = new ProductVariantsModel();
+        $variants = $variantMdl->get($this->data->variant_id);
+        $variant = $variants ? $variants[0] : null;
+        if ($variant) {
+            $socket = new SocketIO();
+            $socket->sendItemUpdate($variant['product_id']);
+        }
+        // log data
+        Logger::write("Variant stock transferred for variant_id:" . $this->data->variant_id, "STOCK", json_encode($this->data));
+        return $result;
     }
 }

@@ -92,10 +92,18 @@ class PosData
     public function getItems($result)
     {
         $storedItemsMdl = new StoredItemsModel();
-        $storedItems    = $storedItemsMdl->get();
+        $storedItems    = $storedItemsMdl->get(null, null, true); // Include variants
         if (is_array($storedItems)) {
             $items = [];
             foreach ($storedItems as $storedItem) {
+                // For variant parent products, include variants
+                if (isset($storedItem['is_variant_parent']) && $storedItem['is_variant_parent']) {
+                    $storedItem['has_variants'] = true;
+                    $storedItem['variants'] = $storedItem['variants'] ?? [];
+                } else {
+                    $storedItem['has_variants'] = false;
+                    $storedItem['variants'] = [];
+                }
 
                 $items[$storedItem['id']] = $storedItem;
             }

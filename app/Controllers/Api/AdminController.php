@@ -164,6 +164,175 @@ class AdminController
         return $this->returnResult();
     }
 
+    // Product Attributes management
+    public function getProductAttributes()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attributes/get');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->getProductAttributes($this->result);
+        return $this->returnResult();
+    }
+
+    public function addProductAttribute()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attributes/add');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->addProductAttribute($this->result);
+        return $this->returnResult();
+    }
+
+    public function updateProductAttribute()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attributes/edit');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->updateProductAttribute($this->result);
+        return $this->returnResult();
+    }
+
+    public function deleteProductAttribute()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attributes/delete');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->deleteProductAttribute($this->result);
+        return $this->returnResult();
+    }
+
+    // Product Attribute Values management
+    public function addProductAttributeValue()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attribute-values/add');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->addProductAttributeValue($this->result);
+        return $this->returnResult();
+    }
+
+    public function updateProductAttributeValue()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attribute-values/edit');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->updateProductAttributeValue($this->result);
+        return $this->returnResult();
+    }
+
+    public function deleteProductAttributeValue()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attribute-values/delete');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->deleteProductAttributeValue($this->result);
+        return $this->returnResult();
+    }
+
+    public function getProductAttributeValues()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('attribute-values/get');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->getProductAttributeValues($this->result);
+        return $this->returnResult();
+    }
+
+    // Product Variants management
+    public function addProductVariant()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/add');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->addProductVariant($this->result);
+        return $this->returnResult();
+    }
+
+    public function updateProductVariant()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/edit');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->updateProductVariant($this->result);
+        return $this->returnResult();
+    }
+
+    public function deleteProductVariant()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/delete');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->deleteProductVariant($this->result);
+        return $this->returnResult();
+    }
+
+    public function getProductVariants()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/get');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->getProductVariants($this->result);
+        return $this->returnResult();
+    }
+
+    // Variant Stock management
+    public function getVariantStock()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/stock/get');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->getVariantStock($this->result);
+        return $this->returnResult();
+    }
+
+    public function updateVariantStock()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/stock/set');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->updateVariantStock($this->result);
+        return $this->returnResult();
+    }
+
+    public function transferVariantStock()
+    {
+        $this->checkAuthentication();
+        $this->checkPermission('variants/stock/transfer');
+
+        $data = $this->getRequestData();
+        $adminMdl = new AdminItems($data);
+        $this->result = $adminMdl->transferVariantStock($this->result);
+        return $this->returnResult();
+    }
+
     // Suppliers management
     public function getSuppliers()
     {
