@@ -18,7 +18,7 @@ use App\Utility\VariantsHelper;
 class AdminVariants
 {
     /**
-     * @var stdClass provided params
+     * @var mixed JSON decoded request data
      */
     private $data;
 
