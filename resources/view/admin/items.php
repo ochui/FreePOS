@@ -884,7 +884,9 @@
     var currentItemId = null;
 
     function loadProductVariants(itemId) {
+        console.log("loadProductVariants: Called with itemId", itemId);
         currentItemId = itemId;
+        console.log("loadProductVariants: Set currentItemId to", currentItemId);
         loadProductAttributes();
         loadProductVariantsList();
         loadLocationsForStock();
@@ -892,21 +894,39 @@
     }
 
     function loadProductAttributes() {
-        if (!currentItemId) return;
-        
+        if (!currentItemId) {
+            console.log("loadProductAttributes: currentItemId is not set");
+            return;
+        }
+
+        console.log("loadProductAttributes: Loading attributes for item", currentItemId);
         POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
+            console.log("loadProductAttributes: Raw API response", data);
+            console.log("loadProductAttributes: Response type", typeof data);
+            console.log("loadProductAttributes: Is array?", Array.isArray(data));
             if (data && data.data) {
+                console.log("loadProductAttributes: Found data.data, populating table with", data.data.length, "attributes");
                 populateAttributesTable(data.data);
+            } else if (Array.isArray(data)) {
+                console.log("loadProductAttributes: Response is array directly, populating table with", data.length, "attributes");
+                populateAttributesTable(data);
+            } else {
+                console.log("loadProductAttributes: No data in response, response:", data);
             }
         });
     }
 
     function populateAttributesTable(attributes) {
+        console.log("populateAttributesTable: Called with", attributes.length, "attributes");
+        console.log("populateAttributesTable: Attributes data:", attributes);
         var tbody = $("#attributes-table tbody");
+        console.log("populateAttributesTable: tbody element found?", tbody.length, tbody);
         tbody.empty();
-        
+        console.log("populateAttributesTable: tbody emptied");
+
         for (var i = 0; i < attributes.length; i++) {
             var attr = attributes[i];
+            console.log("populateAttributesTable: Processing attribute", i, attr);
             var row = '<tr>' +
                 '<td>' + attr.id + '</td>' +
                 '<td>' + attr.name + '</td>' +
@@ -915,8 +935,12 @@
                     '<button class="btn btn-xs btn-danger" onclick="deleteAttribute(' + attr.id + ')">Delete</button>' +
                 '</td>' +
                 '</tr>';
+            console.log("populateAttributesTable: Generated row HTML:", row);
             tbody.append(row);
+            console.log("populateAttributesTable: Row appended, tbody now has", tbody.children().length, "rows");
         }
+        console.log("populateAttributesTable: Table populated, tbody has", tbody.children().length, "rows");
+        console.log("populateAttributesTable: Final tbody HTML:", tbody.html());
     }
 
     function openAddAttributeDialog() {
@@ -953,7 +977,7 @@
             name: name,
             display_name: displayName || name
         }), function(data) {
-            if (data && data.errorCode === "OK") {
+            if (data) {
                 loadProductAttributes();
                 POS.notifications.success("Attribute added successfully");
             } else {
@@ -967,7 +991,7 @@
             POS.sendJsonDataAsync("attributes/delete", JSON.stringify({
                 id: attributeId
             }), function(data) {
-                if (data && data.errorCode === "OK") {
+                if (data) {
                     loadProductAttributes();
                     POS.notifications.success("Attribute deleted successfully");
                 } else {
@@ -985,8 +1009,8 @@
         }
         
         POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({attribute_id: attributeId}), function(data) {
-            if (data && data.data) {
-                populateAttributeValuesTable(data.data);
+            if (Array.isArray(data)) {
+                populateAttributeValuesTable(data);
             }
         });
     }
@@ -1010,29 +1034,40 @@
     }
 
     function openAddAttributeValueDialog() {
-        var attributeId = $("#attribute-select").val();
-        if (!attributeId) {
-            POS.notifications.error("Please select an attribute first");
-            return;
-        }
-        
-        $("#new-value-attribute-id").val(attributeId);
-        $("#new-attribute-value").val("");
-        $("#new-attribute-display-value").val("");
-        
-        $("#add-attribute-value-dialog").removeClass('hide').dialog({
-            modal: true,
-            title: "Add Attribute Value",
-            width: 400,
-            buttons: {
-                "Add": function() {
-                    addAttributeValue();
-                    $(this).dialog("close");
-                },
-                "Cancel": function() {
-                    $(this).dialog("close");
+        // Ensure attributes dropdown is populated before opening modal
+        console.log("openAddAttributeValueDialog: Loading attributes for modal dropdown");
+        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId || 0}), function(data) {
+            console.log("openAddAttributeValueDialog: Attributes loaded", data);
+            if (Array.isArray(data)) {
+                var select = $("#new-value-attribute-id");
+                select.empty();
+                select.append('<option value="">Select Attribute</option>');
+                
+                for (var i = 0; i < data.length; i++) {
+                    var attr = data[i];
+                    select.append('<option value="' + attr.id + '">' + attr.display_name + '</option>');
                 }
+                console.log("openAddAttributeValueDialog: Modal dropdown populated with", data.length, "attributes");
             }
+            
+            // Now open the modal
+            $("#new-attribute-value").val("");
+            $("#new-attribute-display-value").val("");
+            
+            $("#add-attribute-value-dialog").removeClass('hide').dialog({
+                modal: true,
+                title: "Add Attribute Value",
+                width: 400,
+                buttons: {
+                    "Add": function() {
+                        addAttributeValue();
+                        $(this).dialog("close");
+                    },
+                    "Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
         });
     }
 
@@ -1040,6 +1075,11 @@
         var attributeId = $("#new-value-attribute-id").val();
         var value = $("#new-attribute-value").val().trim();
         var displayValue = $("#new-attribute-display-value").val().trim();
+        
+        if (!attributeId) {
+            POS.notifications.error("Please select an attribute first");
+            return;
+        }
         
         if (!value) {
             POS.notifications.error("Attribute value is required");
@@ -1051,7 +1091,7 @@
             value: value,
             display_value: displayValue || value
         }), function(data) {
-            if (data && data.errorCode === "OK") {
+            if (data) {
                 loadAttributeValues();
                 POS.notifications.success("Attribute value added successfully");
             } else {
@@ -1065,7 +1105,7 @@
             POS.sendJsonDataAsync("attribute-values/delete", JSON.stringify({
                 id: valueId
             }), function(data) {
-                if (data && data.errorCode === "OK") {
+                if (data) {
                     loadAttributeValues();
                     POS.notifications.success("Attribute value deleted successfully");
                 } else {
@@ -1079,8 +1119,8 @@
         if (!currentItemId) return;
         
         POS.sendJsonDataAsync("variants/get", JSON.stringify({product_id: currentItemId}), function(data) {
-            if (data && data.data) {
-                populateVariantsTable(data.data);
+            if (Array.isArray(data)) {
+                populateVariantsTable(data);
             }
         });
     }
@@ -1113,9 +1153,9 @@
 
     function openAddVariantDialog() {
         // Load attributes for selection
-        POS.sendJsonDataAsync("admin/attributes", JSON.stringify({product_id: currentItemId}), function(data) {
-            if (data && data.data) {
-                buildVariantAttributesSelection(data.data);
+        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
+            if (data && Array.isArray(data)) {
+                buildVariantAttributesSelection(data);
                 
                 $("#new-variant-sku").val("");
                 $("#new-variant-price").val("");
@@ -1166,13 +1206,13 @@
 
     function loadAttributeValuesForSelection(attributeId) {
         POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({attribute_id: attributeId}), function(data) {
-            if (data && data.data) {
+            if (Array.isArray(data)) {
                 var select = $('select[data-attribute-id="' + attributeId + '"]');
                 select.empty();
                 select.append('<option value="">Select value</option>');
                 
-                for (var i = 0; i < data.data.length; i++) {
-                    var value = data.data[i];
+                for (var i = 0; i < data.length; i++) {
+                    var value = data[i];
                     select.append('<option value="' + value.id + '">' + (value.display_value || value.value) + '</option>');
                 }
             }
@@ -1208,11 +1248,11 @@
         if (cost) variantData.cost = parseFloat(cost);
         
         POS.sendJsonDataAsync("variants/add", JSON.stringify(variantData), function(data) {
-            if (data && data.errorCode === "OK") {
+            if (data) {
                 loadProductVariantsList();
                 POS.notifications.success("Variant added successfully");
             } else {
-                POS.notifications.error("Failed to add variant: " + (data.error || "Unknown error"));
+                POS.notifications.error("Failed to add variant");
             }
         });
     }
@@ -1222,7 +1262,7 @@
             POS.sendJsonDataAsync("variants/delete", JSON.stringify({
                 id: variantId
             }), function(data) {
-                if (data && data.errorCode === "OK") {
+                if (data) {
                     loadProductVariantsList();
                     POS.notifications.success("Variant deleted successfully");
                 } else {
@@ -1248,18 +1288,23 @@
     }
 
     function loadAttributesForSelect() {
-        if (!currentItemId) return;
-        
-        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
-            if (data && data.data) {
+        console.log("loadAttributesForSelect: Loading attributes for select dropdown");
+        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId || 0}), function(data) {
+            console.log("loadAttributesForSelect: API response", data);
+            if (Array.isArray(data)) {
+                console.log("loadAttributesForSelect: Populating dropdown with", data.length, "attributes");
                 var select = $("#attribute-select");
                 select.empty();
                 select.append('<option value="">Select Attribute</option>');
                 
-                for (var i = 0; i < data.data.length; i++) {
-                    var attr = data.data[i];
+                for (var i = 0; i < data.length; i++) {
+                    var attr = data[i];
+                    console.log("loadAttributesForSelect: Adding attribute", attr.id, attr.display_name);
                     select.append('<option value="' + attr.id + '">' + attr.display_name + '</option>');
                 }
+                console.log("loadAttributesForSelect: Dropdown populated, options count:", select.children().length);
+            } else {
+                console.log("loadAttributesForSelect: Response is not an array", data);
             }
         });
     }
@@ -1275,8 +1320,8 @@
             product_id: currentItemId,
             location_id: locationId
         }), function(data) {
-            if (data && data.data) {
-                populateVariantStockTable(data.data);
+            if (Array.isArray(data)) {
+                populateVariantStockTable(data);
             }
         });
     }
@@ -1333,7 +1378,7 @@
             location_id: locationId,
             stock_level: newStock
         }), function(data) {
-            if (data && data.errorCode === "OK") {
+            if (data) {
                 loadVariantStock();
                 POS.notifications.success("Stock updated successfully");
             } else {

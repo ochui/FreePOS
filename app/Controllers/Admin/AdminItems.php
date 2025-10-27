@@ -961,7 +961,7 @@ class AdminItems
             }
         }
         // create the new attribute
-        $qresult = $attrMdl->create($this->data);
+        $qresult = $attrMdl->create((array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not add the attribute: " . $attrMdl->errorInfo;
         } else {
@@ -996,7 +996,7 @@ class AdminItems
             }
         }
         // update the attribute
-        $qresult = $attrMdl->edit($this->data->id, $this->data);
+        $qresult = $attrMdl->edit($this->data->id, (array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not edit the attribute: " . $attrMdl->errorInfo;
         } else {
@@ -1072,7 +1072,7 @@ class AdminItems
             }
         }
         // create the new attribute value
-        $qresult = $valMdl->create($this->data);
+        $qresult = $valMdl->create((array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not add the attribute value: " . $valMdl->errorInfo;
         } else {
@@ -1107,7 +1107,7 @@ class AdminItems
             }
         }
         // update the attribute value
-        $qresult = $valMdl->edit($this->data->id, $this->data);
+        $qresult = $valMdl->edit($this->data->id, (array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not edit the attribute value: " . $valMdl->errorInfo;
         } else {
@@ -1187,7 +1187,7 @@ class AdminItems
             return $result;
         }
         // create the new variant
-        $qresult = $varMdl->create($this->data);
+        $qresult = $varMdl->create((array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not add the variant: " . $varMdl->errorInfo;
         } else {
@@ -1227,7 +1227,7 @@ class AdminItems
             }
         }
         // update the variant
-        $qresult = $varMdl->edit($this->data->id, $this->data);
+        $qresult = $varMdl->edit($this->data->id, (array) $this->data);
         if ($qresult === false) {
             $result['error'] = "Could not edit the variant: " . $varMdl->errorInfo;
         } else {

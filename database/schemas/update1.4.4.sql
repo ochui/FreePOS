@@ -78,16 +78,58 @@ CREATE TABLE IF NOT EXISTS `variant_stock_levels` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE utf8_unicode_ci;
 
 -- Add variant_id column to sale_items table
-ALTER TABLE `sale_items` ADD `variant_id` int(11) DEFAULT NULL AFTER `storeditemid`;
-ALTER TABLE `sale_items` ADD KEY `variant_id` (`variant_id`);
-ALTER TABLE `sale_items` ADD CONSTRAINT `fk_sale_item_variant` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL;
+-- Add variant_id column to sale_items table
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sale_items' AND COLUMN_NAME = 'variant_id') = 0,
+    'ALTER TABLE `sale_items` ADD `variant_id` int(11) DEFAULT NULL AFTER `storeditemid`',
+    'SELECT "Column variant_id already exists in sale_items"'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add index and foreign key for variant_id in sale_items
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sale_items' AND INDEX_NAME = 'variant_id') = 0,
+    'ALTER TABLE `sale_items` ADD KEY `variant_id` (`variant_id`)',
+    'SELECT "Index variant_id already exists in sale_items"'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add foreign key constraint (only if it doesn't exist)
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sale_items' AND CONSTRAINT_NAME = 'fk_sale_item_variant') = 0,
+    'ALTER TABLE `sale_items` ADD CONSTRAINT `fk_sale_item_variant` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL',
+    'SELECT "Foreign key fk_sale_item_variant already exists"'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Add is_variant_parent flag to stored_items table
-ALTER TABLE `stored_items` ADD `is_variant_parent` tinyint(1) NOT NULL DEFAULT 0 AFTER `price`;
-ALTER TABLE `stored_items` ADD `variant_attributes` varchar(2048) DEFAULT NULL AFTER `is_variant_parent`;
+-- Add variant-related columns to stored_items table
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'stored_items' AND COLUMN_NAME = 'is_variant_parent') = 0,
+    'ALTER TABLE `stored_items` ADD `is_variant_parent` tinyint(1) NOT NULL DEFAULT 0 AFTER `price`',
+    'SELECT "Column is_variant_parent already exists in stored_items"'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'stored_items' AND COLUMN_NAME = 'variant_attributes') = 0,
+    'ALTER TABLE `stored_items` ADD `variant_attributes` varchar(2048) DEFAULT NULL AFTER `is_variant_parent`',
+    'SELECT "Column variant_attributes already exists in stored_items"'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Insert some default attributes
-INSERT INTO `product_attributes` (`name`, `display_name`, `sort_order`) VALUES
+INSERT IGNORE INTO `product_attributes` (`name`, `display_name`, `sort_order`) VALUES
 ('color', 'Color', 1),
 ('size', 'Size', 2),
 ('material', 'Material', 3),
