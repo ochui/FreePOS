@@ -1287,6 +1287,11 @@
     }
 
     function addVariant() {
+        if (!currentItemId) {
+            POS.notifications.error("Please select an item first");
+            return;
+        }
+        
         var sku = $("#new-variant-sku").val().trim();
         var price = $("#new-variant-price").val().trim();
         var cost = $("#new-variant-cost").val().trim();
@@ -1310,6 +1315,8 @@
             sku: sku,
             attribute_value_ids: attributes
         };
+        
+        console.log("addVariant: Adding variant with data:", variantData);
         
         if (price) variantData.price = parseFloat(price);
         if (cost) variantData.cost = parseFloat(cost);

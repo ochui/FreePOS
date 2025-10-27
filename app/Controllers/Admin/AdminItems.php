@@ -1176,12 +1176,21 @@ class AdminItems
      */
     public function addProductVariant($result)
     {
-        // validate input
-        $jsonval = new JsonValidate($this->data, '{"product_id":1, "sku":"", "barcode":"", "price":-1, "cost":-1, "attributes":{}}');
+        // validate input - barcode is optional, attributes come as attribute_value_ids array
+        $jsonval = new JsonValidate($this->data, '{"product_id":1, "sku":"", "price":-1, "cost":-1, "attribute_value_ids":"["}');
         if (($errors = $jsonval->validate()) !== true) {
             $result['error'] = $errors;
             return $result;
         }
+
+        // Check if product exists
+        $itemMdl = new StoredItemsModel();
+        $product = $itemMdl->get($this->data->product_id);
+        if (empty($product)) {
+            $result['error'] = "Product not found (ID: " . $this->data->product_id . ")";
+            return $result;
+        }
+
         // create model and check for duplicate SKU
         $varMdl = new ProductVariantsModel();
         $this->data->sku = strtoupper($this->data->sku); // make sure SKU is upper case
@@ -1190,8 +1199,44 @@ class AdminItems
             $result['error'] = "A variant with that SKU already exists";
             return $result;
         }
+
+        // Convert attribute_value_ids to attributes format expected by model
+        $attributes = [];
+        $nameParts = [];
+        if (isset($this->data->attribute_value_ids) && is_array($this->data->attribute_value_ids)) {
+            // Get attribute details for each value to build attribute_id => value_id mapping
+            $attrValMdl = new ProductAttributeValuesModel();
+            foreach ($this->data->attribute_value_ids as $valueId) {
+                $valueData = $attrValMdl->get($valueId);
+                if ($valueData && isset($valueData[0])) {
+                    $attributeId = $valueData[0]['attribute_id'];
+                    $attrMdl = new ProductAttributesModel();
+                    $attrData = $attrMdl->get($attributeId);
+                    if ($attrData && isset($attrData[0])) {
+                        $attributes[$attributeId] = $valueId;
+                        // Build name from attribute values
+                        $nameParts[] = $valueData[0]['display_value'] ?? $valueData[0]['value'];
+                    } else {
+                        $result['error'] = "Attribute not found for value ID: " . $valueId;
+                        return $result;
+                    }
+                } else {
+                    $result['error'] = "Attribute value not found for ID: " . $valueId;
+                    return $result;
+                }
+            }
+        }
+
+        // Generate variant name from selected attribute values
+        $variantName = implode(' - ', $nameParts);
+
+        // Prepare data for model
+        $variantData = (array) $this->data;
+        $variantData['attributes'] = $attributes;
+        $variantData['name'] = $variantName;
+
         // create the new variant
-        $qresult = $varMdl->create((array) $this->data);
+        $qresult = $varMdl->create($variantData);
         if ($qresult === false) {
             $result['error'] = "Could not add the variant: " . $varMdl->errorInfo;
         } else {
@@ -1214,8 +1259,8 @@ class AdminItems
      */
     public function updateProductVariant($result)
     {
-        // validate input
-        $jsonval = new JsonValidate($this->data, '{"id":1, "product_id":1, "sku":"", "barcode":"", "price":-1, "cost":-1, "attributes":{}}');
+        // validate input - barcode is optional, attributes come as attribute_value_ids array
+        $jsonval = new JsonValidate($this->data, '{"id":1, "product_id":1, "sku":"", "price":-1, "cost":-1, "attribute_value_ids":"["}');
         if (($errors = $jsonval->validate()) !== true) {
             $result['error'] = $errors;
             return $result;
@@ -1230,8 +1275,33 @@ class AdminItems
                 return $result;
             }
         }
+
+        // Convert attribute_value_ids to attributes format expected by model
+        $attributes = [];
+        $nameParts = [];
+        if (isset($this->data->attribute_value_ids) && is_array($this->data->attribute_value_ids)) {
+            // Get attribute details for each value to build attribute_id => value_id mapping
+            $attrValMdl = new ProductAttributeValuesModel();
+            foreach ($this->data->attribute_value_ids as $valueId) {
+                $valueData = $attrValMdl->get($valueId);
+                if ($valueData && isset($valueData[0])) {
+                    $attributes[$valueData[0]['attribute_id']] = $valueId;
+                    // Build name from attribute values
+                    $nameParts[] = $valueData[0]['display_value'] ?? $valueData[0]['value'];
+                }
+            }
+        }
+
+        // Generate variant name from selected attribute values
+        $variantName = implode(' - ', $nameParts);
+
+        // Prepare data for model
+        $variantData = (array) $this->data;
+        $variantData['attributes'] = $attributes;
+        $variantData['name'] = $variantName;
+
         // update the variant
-        $qresult = $varMdl->edit($this->data->id, (array) $this->data);
+        $qresult = $varMdl->edit($this->data->id, $variantData);
         if ($qresult === false) {
             $result['error'] = "Could not edit the variant: " . $varMdl->errorInfo;
         } else {
