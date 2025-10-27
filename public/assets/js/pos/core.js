@@ -1275,7 +1275,27 @@ function POS() {
         stockindex = {};
         categoryindex = {};
         for (var key in itemtable) {
+            // Index main product by stock code
             stockindex[itemtable[key].code] = key;
+
+            // Index variants by SKU and barcode if they exist
+            if (itemtable[key].has_variants && itemtable[key].variants) {
+                for (var i = 0; i < itemtable[key].variants.length; i++) {
+                    var variant = itemtable[key].variants[i];
+                    // Create a special key for variants: "variant:{productId}:{variantId}"
+                    var variantKey = "variant:" + key + ":" + variant.id;
+
+                    // Index by SKU if available
+                    if (variant.sku) {
+                        stockindex[variant.sku.toUpperCase()] = variantKey;
+                    }
+
+                    // Index by barcode if available
+                    if (variant.barcode) {
+                        stockindex[variant.barcode.toUpperCase()] = variantKey;
+                    }
+                }
+            }
 
             var categoryid = itemtable[key].hasOwnProperty('categoryid')?itemtable[key].categoryid:0;
             if (categoryindex.hasOwnProperty(categoryid)){
@@ -1291,6 +1311,24 @@ function POS() {
         var data = localStorage.getItem("pos_items");
         if (data != null) {
             itemtable = JSON.parse(data);
+            
+            // Check if the cached data includes variant information
+            // If no items have variants, the cache is old and needs refresh
+            var hasVariants = false;
+            for (var key in itemtable) {
+                if (itemtable[key].has_variants && itemtable[key].variants && itemtable[key].variants.length > 0) {
+                    hasVariants = true;
+                    break;
+                }
+            }
+            
+            if (!hasVariants) {
+                // Old cache without variants, clear it and return false to force fetch
+                localStorage.removeItem("pos_items");
+                itemtable = null;
+                return false;
+            }
+            
             // generate the stock index as well.
             generateItemIndex();
             POS.items.generateItemGridCategories();

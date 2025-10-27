@@ -140,8 +140,10 @@ if (!function_exists('saveJsonFile')) {
 
 
 // Load environment variables
+use Dotenv\Dotenv;
+
 if (file_exists(base_path('.env'))) {
-    $dotenv = Dotenv\Dotenv::createImmutable(base_path());
+    $dotenv = Dotenv::createImmutable(base_path());
     $dotenv->load();
 }
 

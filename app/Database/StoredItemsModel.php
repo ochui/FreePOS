@@ -30,8 +30,16 @@ class StoredItemsModel extends DbConfig
      */
     public function create($data)
     {
-        $sql          = "INSERT INTO stored_items (`data`, `supplierid`, `categoryid`, `code`, `name`, `price`) VALUES (:data, :supplierid, :categoryid, :code, :name, :price);";
-        $placeholders = [":data" => json_encode($data), ":supplierid" => $data->supplierid, ":categoryid" => $data->categoryid, ":code" => $data->code, ":name" => $data->name, ":price" => $data->price];
+        $sql          = "INSERT INTO stored_items (`data`, `supplierid`, `categoryid`, `code`, `name`, `price`, `is_variant_parent`) VALUES (:data, :supplierid, :categoryid, :code, :name, :price, :is_variant_parent);";
+        $placeholders = [
+            ":data" => json_encode($data),
+            ":supplierid" => $data->supplierid,
+            ":categoryid" => $data->categoryid,
+            ":code" => $data->code,
+            ":name" => $data->name,
+            ":price" => $data->price,
+            ":is_variant_parent" => 0
+        ];
 
         return $this->insert($sql, $placeholders);
     }

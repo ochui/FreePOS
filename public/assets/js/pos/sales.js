@@ -32,15 +32,54 @@ function POSItems() {
    * @param {string} code
    */
   this.addItemFromStockCode = function (code) {
-    // find the item id from the stock code index and use it to retrieve the record.
-    var item = POS.getItemsTable()[POS.getStockIndex()[code.toUpperCase()]];
+    var upperCode = code.toUpperCase();
+    var indexKey = POS.getStockIndex()[upperCode];
+
+    if (indexKey === null || indexKey === undefined || indexKey === "") {
+      POS.notifications.error("Item not found", "Item Error");
+      $("#codeinput").val("");
+      return;
+    }
+
+    // Check if this is a variant key (format: "variant:{productId}:{variantId}")
+    if (typeof indexKey === "string" && indexKey.startsWith("variant:")) {
+      var parts = indexKey.split(":");
+      var productId = parseInt(parts[1]);
+      var variantId = parseInt(parts[2]);
+
+      // Get the parent product
+      var product = POS.getItemsTable()[productId];
+      if (!product) {
+        POS.notifications.error("Product not found", "Item Error");
+        $("#codeinput").val("");
+        return;
+      }
+
+      // Find the specific variant
+      if (product.variants && product.variants.length > 0) {
+        for (var i = 0; i < product.variants.length; i++) {
+          if (product.variants[i].id == variantId) {
+            this.addVariantToSale(product, product.variants[i]);
+            $("#codeinput").val("");
+            return;
+          }
+        }
+      }
+
+      POS.notifications.error("Variant not found", "Item Error");
+      $("#codeinput").val("");
+      return;
+    }
+
+    // Regular product
+    var item = POS.getItemsTable()[indexKey];
     if (item === null || item === undefined || item === "") {
-      //ADAM: Should use triple equals
       POS.notifications.error("Item not found", "Item Error");
       $("#codeinput").val("");
     } else {
       // add the item
       addItem(item);
+      $("#codeinput").val("");
     }
   };
 
@@ -66,9 +105,29 @@ function POSItems() {
   };
 
   /**
-   * Shows variant selection dialog for products with variants
-   * @param {Object} item
+   * Adds a specific variant to the sale
+   * @param {Object} product - The parent product
+   * @param {Object} variant - The variant data
    */
+  this.addVariantToSale = function (product, variant) {
+    // Create a variant item object
+    var variantItem = {
+      id: product.id,
+      variant_id: variant.id,
+      name: product.name + ' (' + this.buildVariantName(variant) + ')',
+      code: variant.sku || product.code,
+      price: variant.price || product.price,
+      cost: variant.cost || product.cost,
+      taxid: product.taxid,
+      description: product.description,
+      alt_name: product.alt_name,
+      modifiers: product.modifiers,
+      variant_data: variant
+    };
+
+    // Add the variant item to sale
+    addItem(variantItem);
+  };
   this.showVariantSelectionDialog = function (item) {
     var dialogHtml = '<div id="variant-selection-dialog" title="Select Variant - ' + item.name + '">' +
       '<div style="max-height: 400px; overflow-y: auto;">';
@@ -194,10 +253,42 @@ function POSItems() {
         if (!itemtable.hasOwnProperty(key)) {
           continue;
         }
-        if (itemtable[key].name.toUpperCase().indexOf(upquery) != -1) {
-          results.push(itemtable[key]);
-        } else if (itemtable[key].code.toUpperCase().indexOf(upquery) != -1) {
-          results.push(itemtable[key]);
+
+        var item = itemtable[key];
+
+        // Search in main product name and code
+        if (item.name.toUpperCase().indexOf(upquery) != -1) {
+          results.push(item);
+        } else if (item.code.toUpperCase().indexOf(upquery) != -1) {
+          results.push(item);
+        } else {
+          // Search in variant SKUs and barcodes
+          if (item.has_variants && item.variants) {
+            for (var i = 0; i < item.variants.length; i++) {
+              var variant = item.variants[i];
+              if ((variant.sku && variant.sku.toUpperCase().indexOf(upquery) != -1) ||
+                  (variant.barcode && variant.barcode.toUpperCase().indexOf(upquery) != -1)) {
+                // Create a variant search result
+                var variantResult = {
+                  id: item.id,
+                  variant_id: variant.id,
+                  name: item.name + ' (' + this.buildVariantName(variant) + ')',
+                  code: variant.sku || item.code,
+                  price: variant.price || item.price,
+                  cost: variant.cost || item.cost,
+                  taxid: item.taxid,
+                  description: item.description,
+                  alt_name: item.alt_name,
+                  modifiers: item.modifiers,
+                  variant_data: variant,
+                  is_variant: true,
+                  parent_item: item
+                };
+                results.push(variantResult);
+                break; // Only add the parent product once per match
+              }
+            }
+          }
         }
       }
     }
@@ -699,7 +790,13 @@ $(function () {
       return false;
     },
     select: function (event, ui) {
-      POS.items.addItemFromId(ui.item.id);
+      if (ui.item.is_variant) {
+        // This is a variant search result, add the variant directly
+        POS.items.addVariantToSale(ui.item.parent_item, ui.item.variant_data);
+      } else {
+        // Regular product
+        POS.items.addItemFromId(ui.item.id);
+      }
       this.value = "";
       return false;
     },
