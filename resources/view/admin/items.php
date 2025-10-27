@@ -1098,6 +1098,7 @@
         }), function(data) {
             if (data) {
                 loadAttributeValues();
+                loadAttributesForSelect(); // Refresh dropdown to show updated attributes with values
                 POS.notifications.success("Attribute value added successfully");
             } else {
                 POS.notifications.error("Failed to add attribute value");
@@ -1112,6 +1113,7 @@
             }), function(data) {
                 if (data) {
                     loadAttributeValues();
+                    loadAttributesForSelect(); // Refresh dropdown to show updated attributes with values
                     POS.notifications.success("Attribute value deleted successfully");
                 } else {
                     POS.notifications.error("Failed to delete attribute value");
@@ -1293,24 +1295,66 @@
     }
 
     function loadAttributesForSelect() {
-        console.log("loadAttributesForSelect: Loading attributes for select dropdown");
-        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId || 0}), function(data) {
-            console.log("loadAttributesForSelect: API response", data);
-            if (Array.isArray(data)) {
-                console.log("loadAttributesForSelect: Populating dropdown with", data.length, "attributes");
+        console.log("loadAttributesForSelect: Loading attributes that have values for select dropdown");
+        // First get all attribute values for this product to find which attributes have values
+        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({product_id: currentItemId || 0}), function(valuesData) {
+            console.log("loadAttributesForSelect: Attribute values response", valuesData);
+            var attributeIdsWithValues = [];
+            if (Array.isArray(valuesData)) {
+                // Extract unique attribute IDs from values
+                var seen = {};
+                for (var i = 0; i < valuesData.length; i++) {
+                    var value = valuesData[i];
+                    if (value.attribute_id && !seen[value.attribute_id]) {
+                        seen[value.attribute_id] = true;
+                        attributeIdsWithValues.push(value.attribute_id);
+                    }
+                }
+            } else if (valuesData && valuesData.data && Array.isArray(valuesData.data)) {
+                // Extract unique attribute IDs from values.data
+                var seen = {};
+                for (var i = 0; i < valuesData.data.length; i++) {
+                    var value = valuesData.data[i];
+                    if (value.attribute_id && !seen[value.attribute_id]) {
+                        seen[value.attribute_id] = true;
+                        attributeIdsWithValues.push(value.attribute_id);
+                    }
+                }
+            }
+
+            console.log("loadAttributesForSelect: Found attributes with values:", attributeIdsWithValues);
+
+            if (attributeIdsWithValues.length === 0) {
+                // No attributes have values yet, show empty dropdown
                 var select = $("#attribute-select");
                 select.empty();
                 select.append('<option value="">Select Attribute</option>');
-                
-                for (var i = 0; i < data.length; i++) {
-                    var attr = data[i];
-                    console.log("loadAttributesForSelect: Adding attribute", attr.id, attr.display_name);
-                    select.append('<option value="' + attr.id + '">' + attr.display_name + '</option>');
-                }
-                console.log("loadAttributesForSelect: Dropdown populated, options count:", select.children().length);
-            } else {
-                console.log("loadAttributesForSelect: Response is not an array", data);
+                console.log("loadAttributesForSelect: No attributes with values found");
+                return;
             }
+
+            // Now get the attribute details for these IDs
+            POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId || 0}), function(attributesData) {
+                console.log("loadAttributesForSelect: Attributes response", attributesData);
+                if (Array.isArray(attributesData)) {
+                    console.log("loadAttributesForSelect: Filtering attributes to only those with values");
+                    var select = $("#attribute-select");
+                    select.empty();
+                    select.append('<option value="">Select Attribute</option>');
+
+                    for (var i = 0; i < attributesData.length; i++) {
+                        var attr = attributesData[i];
+                        // Only include attributes that have values
+                        if (attributeIdsWithValues.includes(attr.id)) {
+                            console.log("loadAttributesForSelect: Adding attribute with values", attr.id, attr.display_name);
+                            select.append('<option value="' + attr.id + '">' + attr.display_name + '</option>');
+                        }
+                    }
+                    console.log("loadAttributesForSelect: Dropdown populated with", select.children().length - 1, "attributes that have values");
+                } else {
+                    console.log("loadAttributesForSelect: Attributes response is not an array", attributesData);
+                }
+            });
         });
     }
 
