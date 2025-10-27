@@ -1159,11 +1159,37 @@
     }
 
     function openAddVariantDialog() {
-        // Load attributes for selection
-        POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(data) {
-            if (data && Array.isArray(data)) {
-                buildVariantAttributesSelection(data);
-                
+        // First get all attribute values for this product to find which attributes have values
+        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({product_id: currentItemId}), function(valuesData) {
+            console.log("openAddVariantDialog: Attribute values response", valuesData);
+            var attributeIdsWithValues = [];
+            if (Array.isArray(valuesData)) {
+                // Extract unique attribute IDs from values
+                var seen = {};
+                for (var i = 0; i < valuesData.length; i++) {
+                    var value = valuesData[i];
+                    if (value.attribute_id && !seen[value.attribute_id]) {
+                        seen[value.attribute_id] = true;
+                        attributeIdsWithValues.push(value.attribute_id);
+                    }
+                }
+            } else if (valuesData && valuesData.data && Array.isArray(valuesData.data)) {
+                // Extract unique attribute IDs from values.data
+                var seen = {};
+                for (var i = 0; i < valuesData.data.length; i++) {
+                    var value = valuesData.data[i];
+                    if (value.attribute_id && !seen[value.attribute_id]) {
+                        seen[value.attribute_id] = true;
+                        attributeIdsWithValues.push(value.attribute_id);
+                    }
+                }
+            }
+
+            console.log("openAddVariantDialog: Found attributes with values:", attributeIdsWithValues);
+
+            if (attributeIdsWithValues.length === 0) {
+                // No attributes have values yet, show message
+                $("#variant-attributes-selection").html("<p>No attribute values defined for this product. Please add attribute values first.</p>");
                 $("#new-variant-sku").val("");
                 $("#new-variant-price").val("");
                 $("#new-variant-cost").val("");
@@ -1174,16 +1200,50 @@
                     width: 600,
                     height: 500,
                     buttons: {
-                        "Add": function() {
-                            addVariant();
-                            $(this).dialog("close");
-                        },
                         "Cancel": function() {
                             $(this).dialog("close");
                         }
                     }
                 });
+                return;
             }
+
+            // Now get the attribute details for attributes that have values
+            POS.sendJsonDataAsync("attributes/get", JSON.stringify({product_id: currentItemId}), function(attributesData) {
+                if (attributesData && Array.isArray(attributesData)) {
+                    console.log("openAddVariantDialog: Filtering attributes to only those with values");
+                    var filteredAttributes = [];
+                    for (var i = 0; i < attributesData.length; i++) {
+                        var attr = attributesData[i];
+                        // Only include attributes that have values
+                        if (attributeIdsWithValues.includes(attr.id)) {
+                            filteredAttributes.push(attr);
+                        }
+                    }
+                    
+                    buildVariantAttributesSelection(filteredAttributes);
+                    
+                    $("#new-variant-sku").val("");
+                    $("#new-variant-price").val("");
+                    $("#new-variant-cost").val("");
+                    
+                    $("#add-variant-dialog").removeClass('hide').dialog({
+                        modal: true,
+                        title: "Add Product Variant",
+                        width: 600,
+                        height: 500,
+                        buttons: {
+                            "Add": function() {
+                                addVariant();
+                                $(this).dialog("close");
+                            },
+                            "Cancel": function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                }
+            });
         });
     }
 
