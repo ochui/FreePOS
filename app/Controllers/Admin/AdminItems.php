@@ -1149,13 +1149,17 @@ class AdminItems
      */
     public function getProductAttributeValues($result)
     {
-        // validate input
-        if (!isset($this->data->attribute_id) || !is_numeric($this->data->attribute_id)) {
-            $result['error'] = "A valid attribute_id must be supplied";
-            return $result;
-        }
+        // validate input - attribute_id is optional
         $valMdl = new ProductAttributeValuesModel();
-        $values = $valMdl->get(null, $this->data->attribute_id);
+        
+        if (isset($this->data->attribute_id) && is_numeric($this->data->attribute_id)) {
+            // Get values for specific attribute
+            $values = $valMdl->get(null, $this->data->attribute_id);
+        } else {
+            // Get all values
+            $values = $valMdl->get();
+        }
+        
         if ($values === false) {
             $result['error'] = "Could not get attribute values: " . $valMdl->errorInfo;
         } else {

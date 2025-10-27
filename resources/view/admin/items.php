@@ -214,6 +214,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Attribute</th>
                                         <th>Value</th>
                                         <th>Display Value</th>
                                         <th>Actions</th>
@@ -888,6 +889,7 @@
         currentItemId = itemId;
         console.log("loadProductVariants: Set currentItemId to", currentItemId);
         loadProductAttributes();
+        loadAttributeValues(); // Load all attribute values initially
         loadProductVariantsList();
         loadLocationsForStock();
         loadAttributesForSelect();
@@ -1003,12 +1005,14 @@
 
     function loadAttributeValues() {
         var attributeId = $("#attribute-select").val();
-        if (!attributeId) {
-            $("#attribute-values-table tbody").empty();
-            return;
-        }
+        var requestData = {};
         
-        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify({attribute_id: attributeId}), function(data) {
+        if (attributeId) {
+            requestData.attribute_id = attributeId;
+        }
+        // If no attribute selected, requestData will be empty and API will return all values
+        
+        POS.sendJsonDataAsync("attribute-values/get", JSON.stringify(requestData), function(data) {
             if (Array.isArray(data)) {
                 populateAttributeValuesTable(data);
             }
@@ -1023,6 +1027,7 @@
             var value = values[i];
             var row = '<tr>' +
                 '<td>' + value.id + '</td>' +
+                '<td>' + (value.attribute_name || 'N/A') + '</td>' +
                 '<td>' + value.value + '</td>' +
                 '<td>' + (value.display_value || value.value) + '</td>' +
                 '<td>' +
