@@ -301,6 +301,12 @@ class VariantsController
             'attributes' => $data['attributes'] ?? []
         ];
 
+        // Check if product is already a variant parent, if not, make it one
+        $product = $this->itemsModel->get($data['product_id']);
+        if ($product && (!isset($product[0]['is_variant_parent']) || $product[0]['is_variant_parent'] == 0)) {
+            $this->itemsModel->makeVariantParent($data['product_id'], []);
+        }
+
         $result = $this->variantsModel->create($variantData);
         if ($result === false) {
             $this->result['errorCode'] = "db";
