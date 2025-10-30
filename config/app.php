@@ -1,44 +1,121 @@
 <?php
 
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
+
 return [
+
     /*
     |--------------------------------------------------------------------------
-    | Application Configuration
+    | Application Name
     |--------------------------------------------------------------------------
-    |
-    | This file contains the core configuration for the Pos application.
-    | Values can be overridden using environment variables.
-    |
     */
 
-    'timezone' => env('TIMEZONE') ?: 'UTC',
-    
+    'name' => env('APP_NAME', 'FreePOS'),
+
     /*
     |--------------------------------------------------------------------------
-    | Database Configuration
+    | Application Environment
     |--------------------------------------------------------------------------
-    |
-    | Database settings are handled by the DbConfig class but can be
-    | referenced here for consistency.
-    |
     */
 
-    'database' => [
-        'host' => env('DATABASE_HOST') ?: 'localhost',
-        'port' => env('DATABASE_PORT') ?: '3306',
-        'name' => env('DATABASE_NAME') ?: '',
-        'user' => env('DATABASE_USER') ?: '',
-        'password' => env('DATABASE_PASSWORD') ?: '',
+    'env' => env('APP_ENV', 'production'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Debug Mode
+    |--------------------------------------------------------------------------
+    */
+
+    'debug' => (bool) env('APP_DEBUG', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application URL
+    |--------------------------------------------------------------------------
+    */
+
+    'url' => env('APP_URL', 'http://localhost'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Timezone
+    |--------------------------------------------------------------------------
+    */
+
+    'timezone' => env('TIMEZONE', 'UTC'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Locale Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    'locale' => 'en',
+
+    'fallback_locale' => 'en',
+
+    'faker_locale' => 'en_US',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Encryption Key
+    |--------------------------------------------------------------------------
+    */
+
+    'key' => env('APP_KEY'),
+
+    'cipher' => 'AES-256-CBC',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maintenance Mode Driver
+    |--------------------------------------------------------------------------
+    */
+
+    'maintenance' => [
+        'driver' => 'file',
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Application Base Path
+    | Autoloaded Service Providers
     |--------------------------------------------------------------------------
-    |
-    | This value is set automatically by the bootstrap process.
-    |
     */
 
-    'base_path' => defined('APP_BASE_PATH') ? APP_BASE_PATH : dirname(__DIR__),
+    'providers' => ServiceProvider::defaultProviders()->merge([
+        /*
+         * Package Service Providers...
+         */
+
+        /*
+         * Application Service Providers...
+         */
+        App\Providers\AppServiceProvider::class,
+    ])->toArray(),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Class Aliases
+    |--------------------------------------------------------------------------
+    */
+
+    'aliases' => Facade::defaultAliases()->merge([
+        // 'Example' => App\Facades\Example::class,
+    ])->toArray(),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy Database Configuration (for backward compatibility)
+    |--------------------------------------------------------------------------
+    */
+
+    'database' => [
+        'host' => env('DATABASE_HOST', 'localhost'),
+        'port' => env('DATABASE_PORT', '3306'),
+        'name' => env('DATABASE_NAME', ''),
+        'user' => env('DATABASE_USER', ''),
+        'password' => env('DATABASE_PASSWORD', ''),
+    ],
+
 ];
