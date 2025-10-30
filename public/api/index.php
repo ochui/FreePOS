@@ -1,15 +1,18 @@
 <?php
 
 /**
- * Main API Entry Point
+ * Laravel API Entry Point
  * 
+ * This file bootstraps the Laravel application and handles API requests
  */
 
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Check if composer dependencies are installed
 $vendorAutoload = __DIR__ . '/../../vendor/autoload.php';
-$composerInstalled = file_exists($vendorAutoload);
-
-if (!$composerInstalled) {
-
+if (!file_exists($vendorAutoload)) {
     header('Content-Type: application/json');
     echo json_encode([
         'errorCode' => 'dependency',
@@ -19,9 +22,17 @@ if (!$composerInstalled) {
     exit;
 }
 
+// Register the Composer autoloader
 require $vendorAutoload;
 
-/** @var \App\Core\Application $app */
+// Bootstrap Laravel application
 $app = require_once __DIR__ . '/../../bootstrap/app.php';
 
-$app->handleRequest();
+// Handle the request through Laravel's kernel
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
+
+$kernel->terminate($request, $response);
