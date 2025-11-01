@@ -1,9 +1,28 @@
 .idea/
 .jshintrc
 nbproject
-storage/
 test-sw.html
-vendor/
+
+# Laravel
+/vendor/
+/node_modules/
+/.env
+/.env.backup
+/.env.production
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!storage/framework/.gitignore
+!storage/logs/.gitignore
+
+# Laravel Mix / Vite
+/public/build
+/public/css
+/public/js
 
 # Node.js dependencies
 api/node_modules/
@@ -22,14 +41,28 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Cache files
 .cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
 
-.env
+# IDE
+/.vscode
+/.fleet
+/.idea
 
+# PHPUnit
+/phpunit.xml
+/.phpunit.cache
+
+# Application specific
 public/assets/uploads/
 public/assets/qrcode.png
+database/database.sqlite

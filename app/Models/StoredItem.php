@@ -2,38 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  *
- * StoredItem: lightweight DTO representing an administrative inventory item.
+ * StoredItem: Eloquent model representing an administrative inventory item.
  *
  */
 
-class StoredItem extends \stdClass
+class StoredItem extends Model
 {
-
-    public $code = "";
-    public $qty = "";
-    public $name = "";
-    public $alt_name = "";
-    public $description = "";
-    public $taxid = 1;
-    public $price = "";
-    public $cost = "";
-    public $supplierid = 0;
-    public $categoryid = 0;
-    public $type = "general";
-    public $modifiers = [];
-
-    /**
-     * Set any provided data
-     * @param $data
-     */
-    function __construct($data)
-    {
-        foreach ($data as $key => $value) {
-            if (property_exists($this, $key)) {
-                $this->{$key} = $value;
-            }
-        }
-    }
+    protected $table = 'stored_items';
+    public $timestamps = false;
+    
+    protected $fillable = [
+        'data',
+        'supplierid',
+        'categoryid',
+        'code',
+        'name',
+        'price'
+    ];
 }
